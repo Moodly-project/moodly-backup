@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:moodyr/screens/auth/register_screen.dart';
+import 'package:moodyr/screens/diary/diary_screen.dart';
 import 'package:moodyr/widgets/custom_button.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -13,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -21,12 +25,55 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _login() {
-    if (_formKey.currentState!.validate()) {
-      // Lógica de login aqui
-      print('Email: ${_emailController.text}');
-      print('Senha: ${_passwordController.text}');
-      // Navegar para a próxima tela após login
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate() && !_isLoading) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      const String apiUrl = 'http://10.0.2.2:3000/api/auth/login';
+
+      try {
+        final response = await http.post(
+          Uri.parse(apiUrl),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(<String, String>{
+            'email': _emailController.text,
+            'senha': _passwordController.text,
+          }),
+        );
+
+        if (mounted) {
+          final responseBody = jsonDecode(response.body);
+          final message = responseBody['message'] ?? 'Erro desconhecido';
+
+          if (response.statusCode == 200) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const DiaryScreen()),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Falha no login: $message'), backgroundColor: Colors.red),
+            );
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro ao conectar: ${e.toString()}'), backgroundColor: Colors.red),
+          );
+        }
+        print('Erro na requisição HTTP: $e');
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
@@ -118,10 +165,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   const SizedBox(height: 30),
-                  CustomButton(
-                    text: 'Entrar',
-                    onPressed: _login,
-                  ),
+                  _isLoading
+                    ? const CircularProgressIndicator()
+                    : CustomButton(
+                        text: 'Entrar',
+                        onPressed: _login,
+                      ),
                   const SizedBox(height: 20),
                   TextButton(
                     onPressed: _navigateToRegister,

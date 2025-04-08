@@ -34,7 +34,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       // !! IMPORTANTE: Substitua pela URL correta do seu backend !!
       // Emulador Android: 'http://10.0.2.2:3000/api/auth/register'
-      // Dispositivo físico/iOS: 'http://SEU_IP_LOCAL:3000/api/auth/register'
       const String apiUrl = 'http://10.0.2.2:3000/api/auth/register'; // Exemplo para Emulador Android
 
       try {
