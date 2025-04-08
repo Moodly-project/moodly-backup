@@ -1,4 +1,6 @@
+import 'dart:convert'; // Para jsonEncode
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http; // Importa o pacote http
 import 'package:moodyr/widgets/custom_button.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -14,6 +16,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  bool _isLoading = false; // Estado para indicar carregamento
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -22,14 +26,62 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _register() {
-    if (_formKey.currentState!.validate()) {
-      // Lógica de registro aqui
-      print('Nome: ${_nameController.text}');
-      print('Email: ${_emailController.text}');
-      print('Senha: ${_passwordController.text}');
-      // Navegar para a tela de login ou principal após registro
-      Navigator.pop(context); // Volta para a tela anterior (Login)
+  Future<void> _register() async {
+    if (_formKey.currentState!.validate() && !_isLoading) {
+      setState(() {
+        _isLoading = true; // Inicia o carregamento
+      });
+
+      // !! IMPORTANTE: Substitua pela URL correta do seu backend !!
+      // Emulador Android: 'http://10.0.2.2:3000/api/auth/register'
+      // Dispositivo físico/iOS: 'http://SEU_IP_LOCAL:3000/api/auth/register'
+      const String apiUrl = 'http://10.0.2.2:3000/api/auth/register'; // Exemplo para Emulador Android
+
+      try {
+        final response = await http.post(
+          Uri.parse(apiUrl),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(<String, String>{
+            'nome': _nameController.text,
+            'email': _emailController.text,
+            'senha': _passwordController.text,
+          }),
+        );
+
+        if (mounted) { // Verifica se o widget ainda está na árvore
+           final responseBody = jsonDecode(response.body);
+           final message = responseBody['message'] ?? 'Erro desconhecido';
+
+          if (response.statusCode == 201) {
+            // Sucesso
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(message)),
+            );
+            Navigator.pop(context); // Volta para a tela de login
+          } else {
+            // Erro (ex: email duplicado, validação falhou no backend)
+             ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Falha no registro: $message'), backgroundColor: Colors.red),
+            );
+          }
+        }
+      } catch (e) {
+         if (mounted) {
+            // Erro de conexão ou outro erro
+             ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Erro ao conectar: ${e.toString()}'), backgroundColor: Colors.red),
+            );
+         }
+        print('Erro na requisição HTTP: $e');
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false; // Finaliza o carregamento
+          });
+        }
+      }
     }
   }
 
@@ -131,10 +183,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                   ),
                   const SizedBox(height: 30),
-                  CustomButton(
-                    text: 'Registrar',
-                    onPressed: _register,
-                  ),
+                  _isLoading
+                    ? const CircularProgressIndicator() // Mostra indicador de carregamento
+                    : CustomButton(
+                        text: 'Registrar',
+                        onPressed: _register,
+                      ),
                   const SizedBox(height: 20),
                   TextButton(
                      onPressed: () => Navigator.pop(context), // Volta para a tela de login
