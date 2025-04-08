@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'screens/auth/login_screen.dart'; // Placeholder import
+import 'package:moodyr/screens/auth/login_screen.dart'; // Placeholder import
+import 'package:intl/date_symbol_data_local.dart'; // Import para locale
 
 void main() {
-  runApp(const MoodlyApp());
+  // Inicializa a formatação de data para pt_BR antes de rodar o app
+  initializeDateFormatting('pt_BR', null).then((_) => runApp(const MoodlyApp()));
 }
 
 class MoodlyApp extends StatelessWidget {

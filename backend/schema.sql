@@ -32,3 +32,6 @@ CREATE TABLE IF NOT EXISTS entradas_diario (
 CREATE INDEX idx_usuario_email ON usuarios(email);
 CREATE INDEX idx_entrada_usuario ON entradas_diario(usuario_id);
 CREATE INDEX idx_entrada_data ON entradas_diario(data_entrada); 
+
+select * from usuarios
+select * from entradas_diario   
