@@ -8,44 +8,67 @@ class EulaScreen extends StatelessWidget {
   final String eulaText = """
 **Termos de Uso e Política de Privacidade - Moodly**
 
-**Última atualização:** [2025/04/09]
+**Última atualização:** 09 de abril de 2025
 
-Bem-vindo(a) ao Moodly! Ao usar nosso aplicativo, você concorda com estes termos.
+Bem-vindo ao Moodly! Ao utilizar nosso aplicativo, você concorda com os termos e condições descritos neste documento. Recomendamos que leia atentamente antes de prosseguir.
 
-**1. Coleta e Uso de Dados:**
-   - **Dados de Humor:** Você insere dados sobre seus humores e observações associadas. Esses dados são armazenados localmente em seu dispositivo e enviados para nossa API segura para backup e processamento (ex: geração de relatórios).
-   - **NÃO Coletamos Dados Pessoais Identificáveis:** Não coletamos seu nome real, endereço de e-mail (exceto para login/autenticação), ou outras informações que o identifiquem diretamente, a menos que você as forneça voluntariamente (por exemplo, no conteúdo das entradas do diário).
-   - **Uso para Melhoria:** Podemos usar dados agregados e anonimizados (que não podem ser vinculados a você) para melhorar o aplicativo e seus recursos.
+---
 
-**2. Funcionalidade de IA (com API Externa):**
-   - **Chave de API:** Para usar os recursos de análise de IA, você DEVE fornecer sua própria chave de API de um serviço de terceiros (como OpenAI GPT ou Google Gemini).
-   - **Responsabilidade da Chave:** Você é responsável por obter e proteger sua chave de API. Os custos associados ao uso dessa chave são de sua inteira responsabilidade, de acordo com os termos do provedor da API.
-   - **Envio de Dados para IA:** Ao usar a funcionalidade de IA, seus dados de humor e o conteúdo das entradas do diário (de forma anonimizada, se possível, dependendo da implementação) SERÃO enviados para o serviço de IA externo correspondente à sua chave de API para processamento.
-   - **Privacidade da API Externa:** O uso dos seus dados pelo provedor de API externo é regido pela política de privacidade DESSE provedor. O Moodly não tem controle sobre como o provedor externo usa seus dados. Recomendamos que você leia a política de privacidade do provedor da API antes de fornecer sua chave.
-   - **Moodly NÃO Armazena Respostas da IA:** As respostas e análises geradas pela IA externa não são armazenadas permanentemente pelo Moodly, apenas exibidas temporariamente no aplicativo.
+### 1. Coleta e Uso de Dados
 
-**3. Segurança:**
-   - Empregamos medidas de segurança razoáveis para proteger seus dados armazenados em nossa API (como criptografia e autenticação).
-   - A segurança da sua chave de API externa e dos dados enviados para o provedor externo depende das práticas de segurança desse provedor e de como você gerencia sua chave.
+- **Dados de Humor:** O Moodly permite que você registre seus humores e observações associadas. Esses dados são armazenados localmente em seu dispositivo e enviados para nossa API segura para backup e processamento, como a geração de relatórios.
+- **Dados Pessoais:** Não coletamos informações pessoais identificáveis, como nome real ou endereço de e-mail, a menos que você as forneça voluntariamente (por exemplo, no conteúdo das entradas do diário). Para fins de autenticação, podemos coletar seu endereço de e-mail.
+- **Uso para Melhoria:** Dados agregados e anonimizados podem ser utilizados para aprimorar o aplicativo e seus recursos. Esses dados não podem ser vinculados a você individualmente.
 
-**4. Suas Responsabilidades:**
-   - Manter a segurança da sua conta e senha.
-   - Fornecer informações precisas para login.
-   - Gerenciar e proteger sua chave de API externa.
-   - Usar o aplicativo de forma legal e ética.
+---
 
-**5. Limitação de Responsabilidade:**
-   - O Moodly é fornecido "como está". Não garantimos que o aplicativo ou os insights da IA sejam sempre precisos, completos ou adequados para qualquer finalidade específica.
-   - Não somos responsáveis por quaisquer custos, danos ou problemas decorrentes do uso da sua chave de API externa ou das respostas fornecidas pelo serviço de IA de terceiros.
+### 2. Funcionalidade de IA (com API Externa)
 
-**6. Alterações nos Termos:**
-   - Podemos atualizar estes termos periodicamente. Notificaremos você sobre mudanças significativas. Seu uso continuado após as alterações constitui aceitação dos novos termos.
+- **Chave de API:** Para acessar os recursos de análise de IA, é necessário fornecer uma chave de API de um serviço de terceiros, como OpenAI GPT ou Google Gemini.
+- **Responsabilidade da Chave:** Você é responsável por obter, proteger e gerenciar sua chave de API. Todos os custos relacionados ao uso dessa chave são de sua responsabilidade, conforme os termos do provedor da API.
+- **Envio de Dados para IA:** Ao utilizar a funcionalidade de IA, os dados de humor e o conteúdo das entradas do diário (anonimizados, quando possível) serão enviados ao serviço de IA externo correspondente à sua chave para processamento.
+- **Privacidade da API Externa:** O uso dos seus dados pelo provedor da API externa é regido pela política de privacidade desse provedor. O Moodly não controla como esses dados são utilizados por terceiros. Recomendamos revisar a política de privacidade do provedor antes de fornecer sua chave.
+- **Armazenamento de Respostas da IA:** As respostas e análises geradas pela IA externa não são armazenadas permanentemente pelo Moodly; elas são exibidas temporariamente no aplicativo.
 
-**7. Contato:**
-   - Se tiver dúvidas, entre em contato conosco em [Inserir E-mail de Contato ou Link].
+---
 
-**Ao clicar em "Aceitar", você confirma que leu, entendeu e concorda com estes Termos de Uso e Política de Privacidade.**
-"""; // Coloque o texto EULA aqui
+### 3. Segurança
+
+- Implementamos medidas de segurança adequadas, como criptografia e autenticação, para proteger os dados armazenados em nossa API.
+- A segurança da sua chave de API externa e dos dados enviados ao provedor externo depende das práticas desse provedor e da forma como você gerencia sua chave.
+
+---
+
+### 4. Responsabilidades do Usuário
+
+- Manter a segurança de sua conta e senha.
+- Fornecer informações precisas para login e autenticação.
+- Gerenciar e proteger sua chave de API externa.
+- Utilizar o aplicativo de forma legal e ética.
+
+---
+
+### 5. Limitação de Responsabilidade
+
+- O Moodly é fornecido "no estado em que se encontra". Não garantimos que o aplicativo ou os insights gerados pela IA sejam sempre precisos, completos ou adequados para qualquer finalidade específica.
+- Não nos responsabilizamos por custos, danos ou problemas decorrentes do uso da sua chave de API externa ou das respostas fornecidas pelo serviço de IA de terceiros.
+
+---
+
+### 6. Alterações nos Termos
+
+- Podemos atualizar este documento periodicamente. Você será notificado sobre mudanças significativas. O uso contínuo do aplicativo após as alterações implica aceitação dos novos termos.
+
+---
+
+### 7. Contato
+
+- Para dúvidas ou suporte, entre em contato conosco em **[inserir e-mail de contato ou link]**.
+
+---
+
+**Ao clicar em "Aceitar", você declara que leu, compreendeu e concorda com estes Termos de Uso e Política de Privacidade.**
+""";
 
   final _storage = const FlutterSecureStorage();
 
@@ -79,10 +102,10 @@ Bem-vindo(a) ao Moodly! Ao usar nosso aplicativo, você concorda com estes termo
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50), // Botão largo
                 backgroundColor: Theme.of(context).primaryColor,
-                foregroundColor: Colors.white
+                foregroundColor: Colors.white,
               ),
               child: const Text('Li e Aceito os Termos'),
-            )
+            ),
           ],
         ),
       ),
