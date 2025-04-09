@@ -47,7 +47,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _fetchEntries();
   }
 
@@ -139,7 +139,6 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
           indicatorColor: Colors.white,
           tabs: const [
             Tab(text: 'Geral'),
-            Tab(text: 'Tendências'),
             Tab(text: 'Resumo'),
           ],
         ),
@@ -208,7 +207,6 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
                         controller: _tabController,
                         children: [
                           _buildOverviewTab(),
-                          _buildTrendsTab(),
                           _buildSummaryTab(),
                         ],
                       ),
@@ -287,139 +285,6 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
                       : '${DateFormat('dd/MM/yy').format(_diaryEntries.first.date)} até ${DateFormat('dd/MM/yy').format(_diaryEntries.last.date)}',
                 ),
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTrendsTab() {
-    // Agrupar por mês para tendências
-    Map<String, Map<String, int>> monthlyMoods = {};
-    
-    for (var entry in _diaryEntries) {
-      String month = DateFormat('MMM/yy', 'pt_BR').format(entry.date);
-      monthlyMoods.putIfAbsent(month, () => {});
-      monthlyMoods[month]![entry.mood] = (monthlyMoods[month]![entry.mood] ?? 0) + 1;
-    }
-
-    // Gerar dados para o gráfico de linha
-    final List<String> months = monthlyMoods.keys.toList();
-    final List<Color> gradientColors = [
-      Colors.deepPurple.shade400,
-      Colors.blue.shade400,
-    ];
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSectionCard(
-            title: 'Evolução de Emoções',
-            child: AspectRatio(
-              aspectRatio: 1.5,
-              child: LineChart(
-                LineChartData(
-                  gridData: FlGridData(show: false),
-                  titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          return Text(
-                            value.toInt().toString(),
-                            style: TextStyle(
-                              color: Colors.grey.shade700,
-                              fontSize: 10,
-                            ),
-                          );
-                        },
-                        reservedSize: 30,
-                      ),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          if (value >= 0 && value < months.length) {
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Text(
-                                months[value.toInt()],
-                                style: TextStyle(
-                                  color: Colors.grey.shade700,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            );
-                          }
-                          return const Text('');
-                        },
-                        reservedSize: 30,
-                      ),
-                    ),
-                    rightTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                  ),
-                  borderData: FlBorderData(
-                    show: true,
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: months.asMap().entries.map((entry) {
-                        int total = 0;
-                        monthlyMoods[entry.value]?.forEach((_, count) {
-                          total += count;
-                        });
-                        return FlSpot(entry.key.toDouble(), total.toDouble());
-                      }).toList(),
-                      isCurved: true,
-                      gradient: LinearGradient(colors: gradientColors),
-                      barWidth: 4,
-                      isStrokeCapRound: true,
-                      dotData: FlDotData(show: true),
-                      belowBarData: BarAreaData(
-                        show: true,
-                        gradient: LinearGradient(
-                          colors: gradientColors
-                              .map((color) => color.withOpacity(0.2))
-                              .toList(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          _buildSectionCard(
-            title: 'Insights',
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInsightItem(
-                    'Tendência geral',
-                    _generateTrendText(),
-                    Icons.trending_up,
-                  ),
-                  const Divider(),
-                  _buildInsightItem(
-                    'Consistência',
-                    _generateConsistencyText(),
-                    Icons.repeat,
-                  ),
-                ],
-              ),
             ),
           ),
         ],
@@ -538,11 +403,6 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
           ),
           const SizedBox(height: 20),
           _buildSectionCard(
-            title: 'Palavras Mais Usadas',
-            child: _generateWordCloud(),
-          ),
-          const SizedBox(height: 20),
-          _buildSectionCard(
             title: 'Resumo Mensal',
             child: _buildMonthlyMoodSummary(),
           ),
@@ -651,104 +511,6 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
     );
   }
 
-  String _generateTrendText() {
-    if (_diaryEntries.length < 3) {
-      return "Registre mais entradas para análise de tendências.";
-    }
-    
-    // Análise de tendência simples - positivo vs negativo
-    List<String> positiveEmotions = ['Feliz', 'Calmo', 'Grato', 'Animado'];
-    
-    // Contar emoções positivas na primeira e segunda metade
-    int halfPoint = _diaryEntries.length ~/ 2;
-    
-    int firstHalfPositive = 0;
-    for (int i = 0; i < halfPoint; i++) {
-      if (positiveEmotions.contains(_diaryEntries[i].mood)) {
-        firstHalfPositive++;
-      }
-    }
-    
-    int secondHalfPositive = 0;
-    for (int i = halfPoint; i < _diaryEntries.length; i++) {
-      if (positiveEmotions.contains(_diaryEntries[i].mood)) {
-        secondHalfPositive++;
-      }
-    }
-    
-    double firstHalfRatio = firstHalfPositive / halfPoint;
-    double secondHalfRatio = secondHalfPositive / (_diaryEntries.length - halfPoint);
-    
-    if (secondHalfRatio > firstHalfRatio * 1.2) {
-      return "Sua tendência emocional está melhorando com o tempo, com mais emoções positivas recentemente.";
-    } else if (firstHalfRatio > secondHalfRatio * 1.2) {
-      return "Você tem registrado mais emoções desafiadoras recentemente, comparado ao período anterior.";
-    } else {
-      return "Seu padrão emocional tem se mantido relativamente estável ao longo do tempo.";
-    }
-  }
-
-  String _generateConsistencyText() {
-    if (_diaryEntries.length < 5) {
-      return "Continue registrando suas emoções para análise de consistência.";
-    }
-    
-    // Calcular consistência por intervalos entre registros
-    List<int> intervals = [];
-    for (int i = 1; i < _diaryEntries.length; i++) {
-      intervals.add(
-        _diaryEntries[i].date.difference(_diaryEntries[i-1].date).inDays
-      );
-    }
-    
-    double avgInterval = intervals.reduce((a, b) => a + b) / intervals.length;
-    
-    if (avgInterval <= 2) {
-      return "Excelente consistência! Você tem registrado suas emoções regularmente, quase diariamente.";
-    } else if (avgInterval <= 5) {
-      return "Boa consistência. Você tem registrado suas emoções com frequência, aproximadamente a cada ${avgInterval.toStringAsFixed(1)} dias.";
-    } else {
-      return "Considere registrar suas emoções com mais frequência para um acompanhamento mais preciso. Atualmente, a média é de um registro a cada ${avgInterval.toStringAsFixed(1)} dias.";
-    }
-  }
-
-  Widget _generateWordCloud() {
-    // Em uma aplicação real, isso usaria um algoritmo de processamento de linguagem natural
-    // para extrair palavras-chave dos textos das entradas.
-    // Aqui, simulamos algumas palavras comuns com frequências aleatórias
-    
-    List<Map<String, dynamic>> wordFrequency = [
-      {'word': 'Tranquilidade', 'size': 22.0, 'color': Colors.blue.shade400},
-      {'word': 'Família', 'size': 20.0, 'color': Colors.green.shade400},
-      {'word': 'Trabalho', 'size': 18.0, 'color': Colors.red.shade400},
-      {'word': 'Amigos', 'size': 17.0, 'color': Colors.orange.shade400},
-      {'word': 'Descanso', 'size': 16.0, 'color': Colors.purple.shade300},
-      {'word': 'Música', 'size': 15.0, 'color': Colors.teal.shade400},
-      {'word': 'Esporte', 'size': 14.0, 'color': Colors.indigo.shade300},
-      {'word': 'Leitura', 'size': 13.0, 'color': Colors.amber.shade700},
-    ];
-    
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 12,
-      runSpacing: 12,
-      children: wordFrequency.map((word) {
-        return Chip(
-          label: Text(
-            word['word'],
-            style: TextStyle(
-              fontSize: word['size'],
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          backgroundColor: word['color'],
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        );
-      }).toList(),
-    );
-  }
-
   Widget _buildMonthlyMoodSummary() {
     // Agrupar por mês
     Map<String, Map<String, int>> monthlyMoods = {};
@@ -798,7 +560,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text('Total de entradas: ${monthlyMoods[month]!.values.reduce((a, b) => a + b)}'),
-            trailing: Icon(_moodIcons[dominantMood], color: _moodColors[dominantMood]),
+            trailing: Icon(_moodIcons[dominantMood ?? 'Feliz'], color: _moodColors[dominantMood]),
           ),
         );
       }).toList(),

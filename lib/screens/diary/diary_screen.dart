@@ -6,6 +6,7 @@ import 'package:moodyr/models/diary_entry_model.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:moodyr/screens/report/report_screen.dart';
 import 'package:moodyr/screens/auth/login_screen.dart';
+import 'package:moodyr/screens/ai/ai_screen.dart';
 
 class DiaryScreen extends StatefulWidget {
   const DiaryScreen({super.key});
@@ -543,6 +544,14 @@ class _DiaryScreenState extends State<DiaryScreen> {
     );
   }
 
+  // Navegar para a tela da IA
+  void _navigateToAIScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AIScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -562,6 +571,12 @@ class _DiaryScreenState extends State<DiaryScreen> {
          ),
          elevation: 0,
          actions: [
+           // Botão para tela da IA
+           IconButton(
+             icon: const Icon(Icons.psychology_outlined),
+             tooltip: 'Assistente IA',
+             onPressed: _navigateToAIScreen,
+           ),
            // Botão para tela de relatórios
            IconButton(
              icon: const Icon(Icons.bar_chart),
