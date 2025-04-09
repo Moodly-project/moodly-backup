@@ -24,26 +24,37 @@ class _DiaryScreenState extends State<DiaryScreen> {
   // Use 10.0.2.2 para emulador Android
   final String _apiBaseUrl = 'http://10.0.2.2:3000/api';
 
-  // Mapa de ícones para humores
+  // Mapa de ícones para humores - Ícones melhorados
   final Map<String, IconData> _moodIcons = {
-    'Feliz': Icons.sentiment_very_satisfied,
-    'Ansioso': Icons.sentiment_neutral,
-    'Calmo': Icons.sentiment_satisfied,
+    'Feliz': Icons.emoji_emotions,
+    'Ansioso': Icons.upcoming,
+    'Calmo': Icons.nightlight,
     'Triste': Icons.sentiment_very_dissatisfied,
-    'Animado': Icons.sentiment_satisfied_alt,
+    'Animado': Icons.celebration,
     'Grato': Icons.favorite,
-    'Com Raiva': Icons.sentiment_dissatisfied,
+    'Com Raiva': Icons.flash_on,
   };
 
-  // Mapa de cores para humores
+  // Mapa de cores para humores - Cores mais vibrantes e distintivas
   final Map<String, Color> _moodColors = {
-    'Feliz': Colors.amber,
-    'Ansioso': Colors.orange.shade300,
-    'Calmo': Colors.blue.shade300,
-    'Triste': Colors.blueGrey.shade300,
-    'Animado': Colors.pink.shade300,
-    'Grato': Colors.green.shade300,
-    'Com Raiva': Colors.red.shade300,
+    'Feliz': Colors.amber.shade500,
+    'Ansioso': Colors.orange.shade600,
+    'Calmo': Colors.blue.shade500,
+    'Triste': Colors.indigo.shade500,
+    'Animado': Colors.pink.shade500,
+    'Grato': Colors.green.shade600,
+    'Com Raiva': Colors.red.shade600,
+  };
+
+  // Mapa de descrições para humores
+  final Map<String, String> _moodDescriptions = {
+    'Feliz': 'Contente e satisfeito',
+    'Ansioso': 'Preocupado(a)',
+    'Calmo': 'Em paz',
+    'Triste': 'Sentindo melancolia',
+    'Animado': 'Cheio de energia',
+    'Grato': 'Apreciando a vida',
+    'Com Raiva': 'Sentindo frustração',
   };
 
   @override
@@ -370,9 +381,11 @@ class _DiaryScreenState extends State<DiaryScreen> {
                         color: Colors.deepPurple.shade600
                       )),
                       const SizedBox(height: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white70,
+                      Card(
+                        elevation: 0,
+                        margin: EdgeInsets.zero,
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: DropdownButtonFormField<String>(
@@ -383,9 +396,37 @@ class _DiaryScreenState extends State<DiaryScreen> {
                               value: mood,
                               child: Row(
                                 children: [
-                                  Icon(_moodIcons[mood], color: _moodColors[mood]),
+                                  CircleAvatar(
+                                    backgroundColor: _moodColors[mood]?.withOpacity(0.2),
+                                    radius: 16,
+                                    child: Icon(_moodIcons[mood], color: _moodColors[mood], size: 20),
+                                  ),
                                   const SizedBox(width: 12),
-                                  Text(mood, style: TextStyle(color: Colors.grey.shade800)),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          mood, 
+                                          style: TextStyle(
+                                            color: Colors.grey.shade900,
+                                            fontWeight: FontWeight.w600
+                                          )
+                                        ),
+                                        if (_moodDescriptions.containsKey(mood))
+                                          Text(
+                                            _moodDescriptions[mood]!,
+                                            style: TextStyle(
+                                              color: Colors.grey.shade600,
+                                              fontSize: 12,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               ),
                             );
@@ -407,6 +448,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
                           ),
                           dropdownColor: Colors.white,
                           borderRadius: BorderRadius.circular(15),
+                          icon: Icon(Icons.arrow_drop_down, color: Colors.deepPurple.shade400),
+                          isExpanded: true,
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -417,8 +460,15 @@ class _DiaryScreenState extends State<DiaryScreen> {
                       const SizedBox(height: 12),
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.white70,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(15),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 3,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
                         ),
                         child: TextFormField(
                           controller: _contentController,
@@ -624,6 +674,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
         itemCount: _diaryEntries.length,
         itemBuilder: (context, index) {
           final entry = _diaryEntries[index];
+          final moodColor = _moodColors[entry.mood] ?? Colors.grey;
+          
           return Card(
              margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5.0),
              elevation: 2,
@@ -634,26 +686,33 @@ class _DiaryScreenState extends State<DiaryScreen> {
                  gradient: LinearGradient(
                    colors: [
                      Colors.white,
-                     _moodColors[entry.mood]?.withOpacity(0.1) ?? Colors.white,
+                     moodColor.withOpacity(0.1),
                    ],
                    begin: Alignment.topLeft,
                    end: Alignment.bottomRight,
                  ),
                ),
-               child: Padding(
-                 padding: const EdgeInsets.all(12.0),
-                 child: Column(
-                   crossAxisAlignment: CrossAxisAlignment.start,
-                   children: [
-                     Row(
+               child: Column(
+                 crossAxisAlignment: CrossAxisAlignment.start,
+                 children: [
+                   Container(
+                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                     decoration: BoxDecoration(
+                       color: moodColor.withOpacity(0.15),
+                       borderRadius: const BorderRadius.only(
+                         topLeft: Radius.circular(18),
+                         topRight: Radius.circular(18),
+                       ),
+                     ),
+                     child: Row(
                        children: [
                          CircleAvatar(
-                           backgroundColor: _moodColors[entry.mood]?.withOpacity(0.2),
-                           radius: 25,
+                           backgroundColor: Colors.white,
+                           radius: 20,
                            child: Icon(
                              _moodIcons[entry.mood] ?? Icons.sentiment_neutral,
-                             size: 30,
-                             color: _moodColors[entry.mood],
+                             size: 26,
+                             color: moodColor,
                            ),
                          ),
                          const SizedBox(width: 12),
@@ -663,12 +722,36 @@ class _DiaryScreenState extends State<DiaryScreen> {
                              children: [
                                Text(
                                  DateFormat('EEEE, dd MMMM yyyy', 'pt_BR').format(entry.date),
-                                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.grey.shade800),
+                                 style: TextStyle(
+                                   fontWeight: FontWeight.bold, 
+                                   fontSize: 16, 
+                                   color: Colors.grey.shade900
+                                 ),
                                ),
                                const SizedBox(height: 4),
-                               Text(
-                                 entry.mood,
-                                 style: TextStyle(color: _moodColors[entry.mood], fontWeight: FontWeight.w500),
+                               Row(
+                                 children: [
+                                   Text(
+                                     entry.mood,
+                                     style: TextStyle(
+                                       color: moodColor,
+                                       fontWeight: FontWeight.w600,
+                                     ),
+                                   ),
+                                   if (_moodDescriptions.containsKey(entry.mood)) ...[
+                                     const SizedBox(width: 6),
+                                     Text(
+                                       '- ${_moodDescriptions[entry.mood]}',
+                                       style: TextStyle(
+                                         color: Colors.grey.shade700,
+                                         fontSize: 12,
+                                         fontStyle: FontStyle.italic,
+                                       ),
+                                       maxLines: 1,
+                                       overflow: TextOverflow.ellipsis,
+                                     ),
+                                   ],
+                                 ],
                                ),
                              ],
                            ),
@@ -677,12 +760,12 @@ class _DiaryScreenState extends State<DiaryScreen> {
                            mainAxisSize: MainAxisSize.min,
                            children: [
                              IconButton(
-                               icon: Icon(Icons.edit, color: Colors.blue.shade400),
+                               icon: Icon(Icons.edit, color: Colors.blue.shade600),
                                tooltip: 'Editar',
                                onPressed: () => _showAddEditEntrySheet(entry: entry),
                              ),
                              IconButton(
-                               icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
+                               icon: Icon(Icons.delete_outline, color: Colors.red.shade600),
                                tooltip: 'Excluir',
                                onPressed: () => _deleteEntry(entry.id),
                              ),
@@ -690,18 +773,20 @@ class _DiaryScreenState extends State<DiaryScreen> {
                          ),
                        ],
                      ),
-                     if (entry.content.isNotEmpty) ...[
-                       const SizedBox(height: 12),
-                       Padding(
-                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                         child: Text(
-                           entry.content,
-                           style: TextStyle(fontSize: 15, color: Colors.grey.shade800),
+                   ),
+                   if (entry.content.isNotEmpty)
+                     Padding(
+                       padding: const EdgeInsets.all(16.0),
+                       child: Text(
+                         entry.content,
+                         style: TextStyle(
+                           fontSize: 15, 
+                           color: Colors.grey.shade800,
+                           height: 1.5,
                          ),
                        ),
-                     ],
-                   ],
-                 ),
+                     ),
+                 ],
                ),
              ),
           );
