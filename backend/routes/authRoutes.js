@@ -1,9 +1,13 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const db = require('../config/db').pool;
+const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 const saltRounds = 10;
+
+// !! IMPORTANTE: Use a mesma chave secreta definida no middleware !!
+const JWT_SECRET = process.env.JWT_SECRET || 'suaChaveSecretaMuitoForteAqui'; // Substitua por uma chave segura
 
 // Rota de Registro (POST /api/auth/register)
 router.post('/register', async (req, res) => {
@@ -66,9 +70,20 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Email ou senha inválidos.' }); // Senha incorreta
     }
 
-    // Login bem-sucedido (aqui você pode gerar um token JWT, por exemplo)
-    // Por agora, apenas retornamos uma mensagem de sucesso e dados básicos do usuário
-    res.status(200).json({ message: 'Login bem-sucedido!', user: { id: user.id, nome: user.nome, email: user.email } });
+    // Login bem-sucedido: Gerar o token JWT
+    const payload = {
+        id: user.id,
+        email: user.email,
+        // Você pode adicionar mais dados ao payload se necessário, mas mantenha-o pequeno
+    };
+
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }); // Token expira em 1 hora
+
+    res.status(200).json({
+        message: 'Login bem-sucedido!',
+        token: token, // Retorna o token para o cliente
+        user: { id: user.id, nome: user.nome, email: user.email } // Retorna dados do usuário também
+    });
 
   } catch (error) {
     console.error('Erro no login:', error);

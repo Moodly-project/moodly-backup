@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const db = require('./config/db');
 const authRoutes = require('./routes/authRoutes'); // Importa as rotas de autenticação
+const diaryRoutes = require('./routes/diaryRoutes'); // Importa as rotas do diário
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -21,6 +22,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes); // Usa as rotas de autenticação no prefixo /api/auth
+app.use('/api/diary', diaryRoutes); // Usa as rotas do diário no prefixo /api/diary
 
 // Tratamento de rotas não encontradas
 app.use((req, res, next) => {

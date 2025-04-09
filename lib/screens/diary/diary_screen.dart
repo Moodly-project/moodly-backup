@@ -1,6 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Para formatação de data
-import 'package:moodyr/models/diary_entry_model.dart'; // Importa o modelo
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:moodyr/models/diary_entry_model.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:moodyr/screens/report/report_screen.dart';
+import 'package:moodyr/screens/auth/login_screen.dart';
 
 class DiaryScreen extends StatefulWidget {
   const DiaryScreen({super.key});
@@ -10,15 +15,16 @@ class DiaryScreen extends StatefulWidget {
 }
 
 class _DiaryScreenState extends State<DiaryScreen> {
-  // Lista temporária para armazenar as entradas
-  final List<DiaryEntry> _diaryEntries = [
-    // Dados de exemplo iniciais (remover depois)
-    DiaryEntry(id: '1', content: 'Tive uma reunião produtiva e consegui resolver um problema complexo. Me senti realizado.', date: DateTime.now().subtract(Duration(days: 1)), mood: 'Feliz'),
-    DiaryEntry(id: '2', content: 'Estava me sentindo um pouco sobrecarregado com as tarefas.', date: DateTime.now().subtract(Duration(days: 2)), mood: 'Ansioso'),
-    DiaryEntry(id: '3', content: 'Passei um tempo relaxando e lendo um livro. Foi bom desacelerar.', date: DateTime.now().subtract(Duration(days: 3)), mood: 'Calmo'),
-  ];
+  List<DiaryEntry> _diaryEntries = []; // Começa vazia
+  bool _isLoading = true; // Estado para carregamento inicial
+  String? _errorMessage; // Estado para mensagens de erro
+  final _storage = const FlutterSecureStorage(); // Instância do secure storage
 
-  // Mapa de ícones para humores (adicione mais conforme necessário)
+  // URL Base da API (ajuste conforme necessário)
+  // Use 10.0.2.2 para emulador Android
+  final String _apiBaseUrl = 'http://10.0.2.2:3000/api';
+
+  // Mapa de ícones para humores
   final Map<String, IconData> _moodIcons = {
     'Feliz': Icons.sentiment_very_satisfied,
     'Ansioso': Icons.sentiment_neutral,
@@ -26,176 +32,173 @@ class _DiaryScreenState extends State<DiaryScreen> {
     'Triste': Icons.sentiment_very_dissatisfied,
     'Animado': Icons.sentiment_satisfied_alt,
     'Grato': Icons.favorite,
-    'Com Raiva': Icons.sentiment_dissatisfied, 
-    // Adicione outros humores e seus ícones
+    'Com Raiva': Icons.sentiment_dissatisfied,
   };
 
-  void _showAddEditEntrySheet({DiaryEntry? entry}) {
-    final _contentController = TextEditingController(text: entry?.content ?? '');
-    DateTime _selectedDate = entry?.date ?? DateTime.now();
-    String? _selectedMood = entry?.mood;
+  // Mapa de cores para humores
+  final Map<String, Color> _moodColors = {
+    'Feliz': Colors.amber,
+    'Ansioso': Colors.orange.shade300,
+    'Calmo': Colors.blue.shade300,
+    'Triste': Colors.blueGrey.shade300,
+    'Animado': Colors.pink.shade300,
+    'Grato': Colors.green.shade300,
+    'Com Raiva': Colors.red.shade300,
+  };
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true, // Permite que o sheet seja mais alto
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
-      ),
-      builder: (context) {
-        return StatefulBuilder(
-          // Usamos StatefulBuilder para atualizar o estado dentro do BottomSheet
-          builder: (BuildContext context, StateSetter setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom, // Ajusta pelo teclado
-                top: 20,
-                left: 20,
-                right: 20,
-              ),
-              child: SingleChildScrollView(
-                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(entry == null ? 'Nova Entrada' : 'Editar Entrada', style: Theme.of(context).textTheme.headlineSmall),
-                    const SizedBox(height: 20),
-                    
-                    // Seletor de Data
-                    Text('Data:', style: Theme.of(context).textTheme.titleMedium),
-                    TextButton.icon(
-                       icon: const Icon(Icons.calendar_today),
-                       label: Text(DateFormat('dd/MM/yyyy').format(_selectedDate)),
-                       onPressed: () async {
-                         final DateTime? picked = await showDatePicker(
-                           context: context,
-                           initialDate: _selectedDate,
-                           firstDate: DateTime(2000),
-                           lastDate: DateTime.now(),
-                         );
-                         if (picked != null && picked != _selectedDate) {
-                           setModalState(() { // Atualiza o estado do BottomSheet
-                             _selectedDate = picked;
-                           });
-                         }
-                       },
-                     ),
-                    const SizedBox(height: 15),
+  @override
+  void initState() {
+    super.initState();
+    _fetchEntries(); // Busca as entradas ao iniciar a tela
+  }
 
-                    // Seletor de Humor
-                    Text('Como você está se sentindo?', style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      value: _selectedMood,
-                      hint: const Text('Selecione seu humor'),
-                      items: _moodIcons.keys.map((String mood) {
-                        return DropdownMenuItem<String>(
-                          value: mood,
-                          child: Row(
-                            children: [
-                              Icon(_moodIcons[mood], color: Colors.grey.shade700),
-                              const SizedBox(width: 8),
-                              Text(mood),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                         setModalState(() {
-                           _selectedMood = newValue;
-                         });
-                      },
-                       validator: (value) => value == null ? 'Selecione um humor' : null,
-                       decoration: InputDecoration(
-                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                         filled: true,
-                         fillColor: Colors.grey.shade100,
-                       ),
-                    ),
-                    const SizedBox(height: 15),
+  // Função auxiliar para obter o token JWT
+  Future<String?> _getToken() async {
+    return await _storage.read(key: 'jwt_token');
+  }
 
-                    // Campo de Observações
-                     Text('Observações:', style: Theme.of(context).textTheme.titleMedium),
-                     const SizedBox(height: 8),
-                     TextFormField(
-                      controller: _contentController,
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        hintText: 'Escreva sobre o seu dia...',
-                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                         filled: true,
-                         fillColor: Colors.grey.shade100,
-                      ),
-                       validator: (value) => value == null || value.isEmpty ? 'Escreva algo' : null,
-                    ),
-                    const SizedBox(height: 20),
+  // Função auxiliar para criar headers com o token
+  Future<Map<String, String>> _getHeaders() async {
+    String? token = await _getToken();
+    return {
+      'Content-Type': 'application/json; charset=UTF-8',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
 
-                    // Botão Salvar
-                    Center(
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.save),
-                        label: Text(entry == null ? 'Salvar Entrada' : 'Atualizar Entrada'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepPurple.shade300,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                          shape: RoundedRectangleBorder(
-                             borderRadius: BorderRadius.circular(12),
-                           )
-                        ),
-                        onPressed: () {
-                          if (_selectedMood != null && _contentController.text.isNotEmpty) {
-                            if (entry == null) {
-                              _addEntry(DiaryEntry(
-                                id: DateTime.now().millisecondsSinceEpoch.toString(), // ID temporário
-                                content: _contentController.text,
-                                date: _selectedDate,
-                                mood: _selectedMood!,
-                              ));
-                            } else {
-                              _updateEntry(entry.copyWith(
-                                content: _contentController.text,
-                                date: _selectedDate,
-                                mood: _selectedMood!,
-                              ));
-                            }
-                            Navigator.pop(context); // Fecha o BottomSheet
-                          }
-                           // Adicionar validação se necessário
-                        },
-                      ),
-                    ),
-                     const SizedBox(height: 20),
-                  ],
-                ),
-              ),
+  // Buscar entradas da API
+  Future<void> _fetchEntries() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('$_apiBaseUrl/diary'),
+        headers: headers,
+      );
+
+      if (!mounted) return; // Verificar se o widget ainda está montado
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _diaryEntries = data.map((item) {
+            // O backend retorna o ID como número, convertemos para String
+            // A data vem como String 'YYYY-MM-DD', convertemos para DateTime
+            return DiaryEntry(
+              id: item['id'].toString(),
+              content: item['conteudo'],
+              date: DateTime.parse(item['data_entrada']), // Converte String para DateTime
+              mood: item['humor'],
             );
-          }
-        );
-      },
+          }).toList();
+          _isLoading = false;
+        });
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+         // Implementar logout ou redirecionamento para login se token inválido/expirado
+        setState(() {
+           _errorMessage = 'Sessão inválida. Por favor, faça login novamente.';
+           _isLoading = false;
+        });
+        _logout();
+      } else {
+        final responseBody = jsonDecode(response.body);
+        setState(() {
+          _errorMessage = responseBody['message'] ?? 'Erro ao buscar entradas.';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Erro de conexão ou ao processar dados: ${e.toString()}';
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Logout e navegação para tela de login
+  Future<void> _logout() async {
+    await _storage.delete(key: 'jwt_token');
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const LoginScreen())
     );
   }
 
-   // Funções CRUD temporárias (manipulando a lista local)
-  void _addEntry(DiaryEntry entry) {
-    setState(() {
-      _diaryEntries.insert(0, entry); // Adiciona no início da lista
-    });
-     // TODO: Chamar API para adicionar no backend
+  // Adicionar entrada via API
+  Future<void> _addEntry(DiaryEntry entry) async {
+    try {
+       final headers = await _getHeaders();
+       // Formata a data para 'YYYY-MM-DD' como esperado pelo backend
+       final formattedDate = DateFormat('yyyy-MM-dd').format(entry.date);
+
+       final response = await http.post(
+         Uri.parse('$_apiBaseUrl/diary'),
+         headers: headers,
+         body: jsonEncode({
+           'conteudo': entry.content,
+           'humor': entry.mood,
+           'data_entrada': formattedDate,
+         }),
+       );
+
+       if (!mounted) return;
+
+        if (response.statusCode == 201) {
+           _fetchEntries(); // Recarrega as entradas após adicionar
+           ScaffoldMessenger.of(context).showSnackBar(
+               const SnackBar(content: Text('Entrada adicionada com sucesso!'), backgroundColor: Colors.green)
+           );
+       } else {
+          final responseBody = jsonDecode(response.body);
+          _showErrorSnackbar(responseBody['message'] ?? 'Falha ao adicionar entrada.');
+       }
+    } catch (e) {
+       if (!mounted) return;
+       _showErrorSnackbar('Erro ao conectar com o servidor: ${e.toString()}');
+    }
+
   }
 
-  void _updateEntry(DiaryEntry updatedEntry) {
-    setState(() {
-      final index = _diaryEntries.indexWhere((e) => e.id == updatedEntry.id);
-      if (index != -1) {
-        _diaryEntries[index] = updatedEntry;
-      }
-    });
-     // TODO: Chamar API para atualizar no backend
+  // Atualizar entrada via API
+  Future<void> _updateEntry(DiaryEntry updatedEntry) async {
+     try {
+       final headers = await _getHeaders();
+       final formattedDate = DateFormat('yyyy-MM-dd').format(updatedEntry.date);
+
+       final response = await http.put(
+         Uri.parse('$_apiBaseUrl/diary/${updatedEntry.id}'), // Passa o ID na URL
+         headers: headers,
+         body: jsonEncode({
+           'conteudo': updatedEntry.content,
+           'humor': updatedEntry.mood,
+           'data_entrada': formattedDate,
+         }),
+       );
+        if (!mounted) return;
+
+       if (response.statusCode == 200) {
+          _fetchEntries(); // Recarrega as entradas após atualizar
+           ScaffoldMessenger.of(context).showSnackBar(
+               const SnackBar(content: Text('Entrada atualizada com sucesso!'), backgroundColor: Colors.green)
+           );
+       } else {
+          final responseBody = jsonDecode(response.body);
+           _showErrorSnackbar(responseBody['message'] ?? 'Falha ao atualizar entrada.');
+       }
+    } catch (e) {
+        if (!mounted) return;
+       _showErrorSnackbar('Erro ao conectar com o servidor: ${e.toString()}');
+    }
   }
 
-  void _deleteEntry(String id) {
-     // Mostrar diálogo de confirmação
-     showDialog(
+  // Deletar entrada via API
+  Future<void> _deleteEntry(String id) async {
+     // Mostrar diálogo de confirmação PRIMEIRO
+     bool? confirmDelete = await showDialog<bool>(
        context: context,
        builder: (BuildContext ctx) {
          return AlertDialog(
@@ -205,156 +208,505 @@ class _DiaryScreenState extends State<DiaryScreen> {
              TextButton(
                child: const Text('Cancelar'),
                onPressed: () {
-                 Navigator.of(ctx).pop(); // Fecha o diálogo
+                 Navigator.of(ctx).pop(false); // Retorna false
                },
              ),
              TextButton(
                style: TextButton.styleFrom(foregroundColor: Colors.red),
                child: const Text('Excluir'),
                onPressed: () {
-                  setState(() {
-                    _diaryEntries.removeWhere((e) => e.id == id);
-                  });
-                   Navigator.of(ctx).pop(); // Fecha o diálogo
-                 // TODO: Chamar API para deletar no backend (soft delete)
+                 Navigator.of(ctx).pop(true); // Retorna true
                },
              ),
            ],
          );
        },
      );
+
+      // Se o usuário não confirmou, não fazer nada
+     if (confirmDelete != true) {
+       return;
+     }
+
+     // Se confirmou, prosseguir com a deleção na API
+     try {
+        final headers = await _getHeaders();
+        final response = await http.delete(
+         Uri.parse('$_apiBaseUrl/diary/$id'), // Passa o ID na URL
+         headers: headers,
+       );
+
+        if (!mounted) return;
+
+       if (response.statusCode == 200) {
+         _fetchEntries(); // Recarrega as entradas após deletar
+          ScaffoldMessenger.of(context).showSnackBar(
+             const SnackBar(content: Text('Entrada excluída com sucesso!'), backgroundColor: Colors.orange)
+          );
+       } else {
+          final responseBody = jsonDecode(response.body);
+          _showErrorSnackbar(responseBody['message'] ?? 'Falha ao excluir entrada.');
+       }
+     } catch (e) {
+         if (!mounted) return;
+        _showErrorSnackbar('Erro ao conectar com o servidor: ${e.toString()}');
+     }
+  }
+
+  // Função auxiliar para mostrar SnackBar de erro
+  void _showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
+  void _showAddEditEntrySheet({DiaryEntry? entry}) {
+    final _contentController = TextEditingController(text: entry?.content ?? '');
+    DateTime _selectedDate = entry?.date ?? DateTime.now();
+    String? _selectedMood = entry?.mood;
+    final _formKey = GlobalKey<FormState>(); // Chave para o formulário no BottomSheet
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                top: 20,
+                left: 20,
+                right: 20,
+              ),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.blue.shade50,
+                    Colors.purple.shade50,
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+              child: Form( // Envolve com um Form
+                key: _formKey, // Associa a chave
+                child: SingleChildScrollView(
+                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Center(
+                        child: Container(
+                          height: 4,
+                          width: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade400,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Center(
+                        child: Text(
+                          entry == null ? 'Como você está hoje?' : 'Revisando seu dia',
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepPurple.shade700
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      Text('Data:', style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple.shade600
+                      )),
+                      Card(
+                        elevation: 0,
+                        color: Colors.white70,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: ListTile(
+                            leading: Icon(Icons.calendar_today, color: Colors.deepPurple.shade400),
+                            title: Text(
+                              DateFormat('EEEE, dd MMMM yyyy', 'pt_BR').format(_selectedDate),
+                              style: TextStyle(color: Colors.grey.shade800)
+                            ),
+                            onTap: () async {
+                              final DateTime? picked = await showDatePicker(
+                                context: context,
+                                initialDate: _selectedDate,
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime.now(),
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: ColorScheme.light(
+                                        primary: Colors.deepPurple.shade300,
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
+                              );
+                              if (picked != null && picked != _selectedDate) {
+                                setModalState(() {
+                                  _selectedDate = picked;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text('Como você está se sentindo?', style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple.shade600
+                      )),
+                      const SizedBox(height: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white70,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: DropdownButtonFormField<String>(
+                          value: _selectedMood,
+                          hint: const Text('Selecione seu humor'),
+                          items: _moodIcons.keys.map((String mood) {
+                            return DropdownMenuItem<String>(
+                              value: mood,
+                              child: Row(
+                                children: [
+                                  Icon(_moodIcons[mood], color: _moodColors[mood]),
+                                  const SizedBox(width: 12),
+                                  Text(mood, style: TextStyle(color: Colors.grey.shade800)),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            setModalState(() {
+                              _selectedMood = newValue;
+                            });
+                          },
+                          validator: (value) => value == null ? 'Selecione um humor' : null,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: Colors.transparent,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                          dropdownColor: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text('O que você gostaria de compartilhar?', style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple.shade600
+                      )),
+                      const SizedBox(height: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white70,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: TextFormField(
+                          controller: _contentController,
+                          maxLines: 5,
+                          decoration: InputDecoration(
+                            hintText: 'Escreva sobre seus sentimentos e experiências...',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: Colors.transparent,
+                            contentPadding: const EdgeInsets.all(16),
+                          ),
+                          validator: (value) => value == null || value.isEmpty ? 'Por favor, compartilhe seus pensamentos' : null,
+                          style: TextStyle(color: Colors.grey.shade800),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      Center(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepPurple.shade400,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            elevation: 2,
+                          ),
+                          onPressed: () {
+                            // Validar o formulário antes de salvar
+                            if (_formKey.currentState!.validate()) {
+                              final newEntry = DiaryEntry(
+                                id: entry?.id ?? 'temp_id', // Usa ID existente ou temporário
+                                content: _contentController.text,
+                                date: _selectedDate,
+                                mood: _selectedMood!,
+                              );
+
+                              if (entry == null) {
+                                _addEntry(newEntry);
+                              } else {
+                                _updateEntry(newEntry);
+                              }
+                              Navigator.pop(context); // Fecha o BottomSheet apenas se validou
+                            }
+                          },
+                          child: Text(
+                            entry == null ? 'Salvar entrada' : 'Atualizar entrada',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+        );
+      },
+    );
+  }
+
+  // Navegar para a tela de relatórios
+  void _navigateToReportScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ReportScreen()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Meu Diário'),
+        title: const Text('Meu Diário de Emoções', style: TextStyle(fontWeight: FontWeight.bold)),
         flexibleSpace: Container(
            decoration: BoxDecoration(
              gradient: LinearGradient(
                 colors: [
-                 Colors.blue.shade100,
-                 Colors.purple.shade100,
+                 Colors.deepPurple.shade300,
+                 Colors.blue.shade300,
                ],
                begin: Alignment.topLeft,
                end: Alignment.bottomRight,
               ),
            ),
          ),
+         elevation: 0,
          actions: [
-           // Adicionar botão de logout ou configurações aqui se necessário
+           // Botão para tela de relatórios
+           IconButton(
+             icon: const Icon(Icons.bar_chart),
+             tooltip: 'Ver relatórios',
+             onPressed: _navigateToReportScreen,
+           ),
+           // Botão de logout
+           IconButton(
+             icon: const Icon(Icons.logout),
+             tooltip: 'Sair',
+             onPressed: _logout,
+           ),
          ],
       ),
-      body: Container(
-        // Gradiente de fundo para consistência
-         decoration: BoxDecoration(
-           gradient: LinearGradient(
-              colors: [
-               Colors.purple.shade50,
-               Colors.blue.shade50,
-             ],
-             begin: Alignment.topCenter,
-             end: Alignment.bottomCenter,
-            ),
-         ),
-         child: _diaryEntries.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                     Icon(Icons.book_outlined, size: 80, color: Colors.grey.shade400),
-                     const SizedBox(height: 16),
-                     Text(
-                      'Nenhuma entrada ainda.',
-                      style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
-                    ),
-                    const SizedBox(height: 8),
-                     Text(
-                      'Toque no botão + para adicionar sua primeira entrada!',
-                       textAlign: TextAlign.center,
-                       style: TextStyle(color: Colors.grey.shade500),
-                    ),
-                  ],
-                )
-              )
-            : ListView.builder(
-                padding: const EdgeInsets.all(8.0),
-                itemCount: _diaryEntries.length,
-                itemBuilder: (context, index) {
-                  final entry = _diaryEntries[index];
-                  return Card(
-                     margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5.0),
-                     elevation: 3,
-                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-                     child: ListTile(
-                      contentPadding: const EdgeInsets.all(15.0),
-                       leading: Icon(
-                         _moodIcons[entry.mood] ?? Icons.sentiment_neutral, // Ícone do humor
-                         size: 40,
-                         color: Colors.deepPurple.shade300,
-                       ),
-                       title: Text(
-                         DateFormat('EEEE, dd MMMM yyyy', 'pt_BR').format(entry.date), // Data formatada
-                         style: const TextStyle(fontWeight: FontWeight.bold),
-                       ),
-                       subtitle: Padding(
-                         padding: const EdgeInsets.only(top: 8.0),
-                         child: Text(
-                           entry.content,
-                           maxLines: 2,
-                           overflow: TextOverflow.ellipsis, // Mostra '...' se for muito longo
-                         ),
-                       ),
-                       trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                         children: [
-                           IconButton(
-                             icon: Icon(Icons.edit, color: Colors.blueGrey.shade400),
-                             tooltip: 'Editar',
-                             onPressed: () => _showAddEditEntrySheet(entry: entry),
-                           ),
-                           IconButton(
-                             icon: Icon(Icons.delete_outline, color: Colors.red.shade300),
-                             tooltip: 'Excluir',
-                             onPressed: () => _deleteEntry(entry.id),
-                           ),
-                         ],
-                       ),
-                       onTap: () { 
-                          // Opcional: Abrir uma visualização detalhada da entrada
-                          _showAddEditEntrySheet(entry: entry);
-                       },
-                     ),
-                  );
-                },
+      body: RefreshIndicator(
+         onRefresh: _fetchEntries,
+         child: Container(
+           decoration: BoxDecoration(
+             gradient: LinearGradient(
+                colors: [
+                 Colors.purple.shade50,
+                 Colors.blue.shade50,
+               ],
+               begin: Alignment.topCenter,
+               end: Alignment.bottomCenter,
               ),
-        ),
-
+           ),
+           child: _buildBody(),
+         ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddEditEntrySheet(),
         tooltip: 'Adicionar Entrada',
         backgroundColor: Colors.deepPurple.shade400,
         child: const Icon(Icons.add, color: Colors.white),
+        elevation: 4,
       ),
     );
   }
-}
 
-// Adicionar extensão para facilitar a atualização parcial do DiaryEntry
-// (Isso é útil pois nosso modelo tem campos final)
-extension DiaryEntryCopyWith on DiaryEntry {
-  DiaryEntry copyWith({
-    String? id,
-    String? content,
-    DateTime? date,
-    String? mood,
-  }) {
-    return DiaryEntry(
-      id: id ?? this.id,
-      content: content ?? this.content,
-      date: date ?? this.date,
-      mood: mood ?? this.mood,
-    );
+  // Método para construir o corpo da tela baseado no estado
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (_errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+             mainAxisAlignment: MainAxisAlignment.center,
+             children: [
+                 Icon(Icons.error_outline, color: Colors.red, size: 60),
+                 const SizedBox(height: 16),
+                 Text(_errorMessage!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.red, fontSize: 16)),
+                 const SizedBox(height: 16),
+                 ElevatedButton.icon(
+                   icon: const Icon(Icons.refresh),
+                   label: const Text('Tentar Novamente'),
+                   onPressed: _fetchEntries,
+                   style: ElevatedButton.styleFrom(
+                     backgroundColor: Colors.deepPurple.shade400,
+                     foregroundColor: Colors.white,
+                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                   ),
+                 )
+             ]
+          ),
+        )
+      );
+    } else if (_diaryEntries.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.book_outlined, size: 80, color: Colors.deepPurple.shade200),
+              const SizedBox(height: 24),
+              Text(
+                'Seu diário está vazio',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.deepPurple.shade700),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Registre como você se sente hoje tocando no botão abaixo',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: Colors.deepPurple.shade400),
+              ),
+              const SizedBox(height: 40),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.add),
+                label: const Text('Nova entrada'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple.shade400,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+                onPressed: () => _showAddEditEntrySheet(),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      // Lista de entradas
+      return ListView.builder(
+        padding: const EdgeInsets.all(12.0),
+        itemCount: _diaryEntries.length,
+        itemBuilder: (context, index) {
+          final entry = _diaryEntries[index];
+          return Card(
+             margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5.0),
+             elevation: 2,
+             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.0)),
+             child: Container(
+               decoration: BoxDecoration(
+                 borderRadius: BorderRadius.circular(18.0),
+                 gradient: LinearGradient(
+                   colors: [
+                     Colors.white,
+                     _moodColors[entry.mood]?.withOpacity(0.1) ?? Colors.white,
+                   ],
+                   begin: Alignment.topLeft,
+                   end: Alignment.bottomRight,
+                 ),
+               ),
+               child: Padding(
+                 padding: const EdgeInsets.all(12.0),
+                 child: Column(
+                   crossAxisAlignment: CrossAxisAlignment.start,
+                   children: [
+                     Row(
+                       children: [
+                         CircleAvatar(
+                           backgroundColor: _moodColors[entry.mood]?.withOpacity(0.2),
+                           radius: 25,
+                           child: Icon(
+                             _moodIcons[entry.mood] ?? Icons.sentiment_neutral,
+                             size: 30,
+                             color: _moodColors[entry.mood],
+                           ),
+                         ),
+                         const SizedBox(width: 12),
+                         Expanded(
+                           child: Column(
+                             crossAxisAlignment: CrossAxisAlignment.start,
+                             children: [
+                               Text(
+                                 DateFormat('EEEE, dd MMMM yyyy', 'pt_BR').format(entry.date),
+                                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.grey.shade800),
+                               ),
+                               const SizedBox(height: 4),
+                               Text(
+                                 entry.mood,
+                                 style: TextStyle(color: _moodColors[entry.mood], fontWeight: FontWeight.w500),
+                               ),
+                             ],
+                           ),
+                         ),
+                         Row(
+                           mainAxisSize: MainAxisSize.min,
+                           children: [
+                             IconButton(
+                               icon: Icon(Icons.edit, color: Colors.blue.shade400),
+                               tooltip: 'Editar',
+                               onPressed: () => _showAddEditEntrySheet(entry: entry),
+                             ),
+                             IconButton(
+                               icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
+                               tooltip: 'Excluir',
+                               onPressed: () => _deleteEntry(entry.id),
+                             ),
+                           ],
+                         ),
+                       ],
+                     ),
+                     if (entry.content.isNotEmpty) ...[
+                       const SizedBox(height: 12),
+                       Padding(
+                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                         child: Text(
+                           entry.content,
+                           style: TextStyle(fontSize: 15, color: Colors.grey.shade800),
+                         ),
+                       ),
+                     ],
+                   ],
+                 ),
+               ),
+             ),
+          );
+        },
+      );
+    }
   }
 } 

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:moodyr/screens/auth/register_screen.dart';
 import 'package:moodyr/screens/diary/diary_screen.dart';
 import 'package:moodyr/widgets/custom_button.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  final _storage = const FlutterSecureStorage();
 
   @override
   void dispose() {
@@ -47,14 +49,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (mounted) {
           final responseBody = jsonDecode(response.body);
-          final message = responseBody['message'] ?? 'Erro desconhecido';
 
           if (response.statusCode == 200) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const DiaryScreen()),
-            );
+            final String? token = responseBody['token'];
+
+            if (token != null) {
+              await _storage.write(key: 'jwt_token', value: token);
+
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const DiaryScreen()),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Erro ao processar login: Token não recebido.'), backgroundColor: Colors.red),
+              );
+            }
           } else {
+            final message = responseBody['message'] ?? 'Erro desconhecido no login';
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Falha no login: $message'), backgroundColor: Colors.red),
             );
