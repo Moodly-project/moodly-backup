@@ -89,12 +89,13 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen> {
                 icon: Icons.android, // Ícone exemplo
               ),
                const SizedBox(height: 16),
-              _buildInstructionTile(
-                title: 'OpenAI (ChatGPT):',
-                url: 'https://platform.openai.com/api-keys',
-                instructions: '1. Crie uma conta ou faça login na plataforma OpenAI.\n2. Navegue até a seção "API keys".\n3. Clique em "Create new secret key".\n4. Copie a chave gerada e cole acima. (Pode haver custos associados)',
-                icon: Icons.api, // Ícone exemplo
-              ),
+              // REMOVIDO: Card de instruções para OpenAI
+              // _buildInstructionTile(
+              //   title: 'OpenAI (ChatGPT):',
+              //   url: 'https://platform.openai.com/api-keys',
+              //   instructions: '1. Crie uma conta ou faça login na plataforma OpenAI.\n2. Navegue até a seção "API keys".\n3. Clique em "Create new secret key".\n4. Copie a chave gerada e cole acima. (Pode haver custos associados)',
+              //   icon: Icons.api, // Ícone exemplo
+              // ),
 
               const SizedBox(height: 40),
               Center(

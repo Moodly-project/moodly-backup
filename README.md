@@ -9,7 +9,7 @@ Moodly é um aplicativo Flutter que funciona como um diário pessoal para regist
 Este projeto é fruto de um esforço colaborativo e iterativo. O código foi construído combinando:
 
 *   **Coleta de Repositórios:** Partes da estrutura e funcionalidades foram adaptadas de outros projetos e exemplos encontrados em nosso repositório.
-*   **Inspiração Online:** Buscamos soluções e ideias em documentações, tutoriais e exemplos da comunidade Flutter e Node.js (porque ninguém reinventa a roda o tempo todo, né? 😄).
+*   **Inspiração Online:** Buscamos soluções e ideias em documentações, tutoriais e exemplos da comunidade Flutter e Node.js (e um pouquinho de ctrl c ctrl v da web, e nao pode faltar uma pitadinha de uso de IA).
 *   **Desenvolvimento Incremental:** O código foi sendo refinado e modificado ao longo do tempo com base nas necessidades e feedbacks.
 
 O objetivo sempre foi criar um aplicativo funcional e visualmente agradável, mantendo a simplicidade onde possível.
