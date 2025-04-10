@@ -409,22 +409,12 @@ class _DiaryScreenState extends State<DiaryScreen> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Text(
-                                          mood,
+                                          mood, 
                                           style: TextStyle(
                                             color: Colors.grey.shade900,
                                             fontWeight: FontWeight.w600
                                           )
                                         ),
-                                        if (_moodDescriptions.containsKey(mood))
-                                          Text(
-                                            _moodDescriptions[mood]!,
-                                            style: TextStyle(
-                                              color: Colors.grey.shade600,
-                                              fontSize: 12,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
                                       ],
                                     ),
                                   ),
@@ -753,19 +743,6 @@ class _DiaryScreenState extends State<DiaryScreen> {
                                        fontWeight: FontWeight.w600,
                                      ),
                                    ),
-                                   if (_moodDescriptions.containsKey(entry.mood)) ...[
-                                     const SizedBox(width: 6),
-                                     Text(
-                                       '- ${_moodDescriptions[entry.mood]}',
-                                       style: TextStyle(
-                                         color: Colors.grey.shade700,
-                                         fontSize: 12,
-                                         fontStyle: FontStyle.italic,
-                                       ),
-                                       maxLines: 1,
-                                       overflow: TextOverflow.ellipsis,
-                                     ),
-                                   ],
                                  ],
                                ),
                              ],

@@ -5,6 +5,7 @@ import 'package:moodyr/screens/auth/register_screen.dart';
 import 'package:moodyr/screens/diary/diary_screen.dart';
 import 'package:moodyr/widgets/custom_button.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:moodyr/screens/auth/api_key_setup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -96,6 +97,13 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  void _navigateToApiKeySetup() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ApiKeySetupScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,8 +111,8 @@ class _LoginScreenState extends State<LoginScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Colors.blue.shade100,
-              Colors.purple.shade100,
+              Theme.of(context).colorScheme.primaryContainer.withOpacity(0.6),
+              Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.6),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -123,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade800,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -132,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     'Seu diário de emoções pessoal',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.grey.shade600,
+                      color: Theme.of(context).colorScheme.secondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -188,7 +196,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _navigateToRegister,
                     child: Text(
                       'Não tem uma conta? Registre-se',
-                      style: TextStyle(color: Colors.deepPurple.shade700),
+                      style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextButton.icon(
+                    icon: const Icon(Icons.key, size: 18),
+                    label: const Text('Configurar Chave de API da IA'),
+                    onPressed: _navigateToApiKeySetup,
+                    style: TextButton.styleFrom(
+                       foregroundColor: Colors.grey.shade600, 
                     ),
                   ),
                 ],
