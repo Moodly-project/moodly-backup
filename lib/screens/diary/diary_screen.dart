@@ -409,7 +409,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Text(
-                                          mood, 
+                                          mood,
                                           style: TextStyle(
                                             color: Colors.grey.shade900,
                                             fontWeight: FontWeight.w600

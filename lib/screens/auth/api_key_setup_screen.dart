@@ -64,9 +64,10 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen> {
                 controller: _apiKeyController,
                 decoration: InputDecoration(
                   labelText: 'Sua Chave de API',
-                  hintText: 'Cole sua chave aqui (ex: sk-...)',
+                  hintText: 'Cole sua chave aqui (ex: sk-...) ',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
+                enableInteractiveSelection: true,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Por favor, insira sua chave de API.';
