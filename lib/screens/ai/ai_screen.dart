@@ -6,7 +6,7 @@ import 'package:moodyr/models/diary_entry_model.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:intl/intl.dart'; // Necessário para formatar datas no prompt
 
-// REMOVIDO: Mock data não é mais necessário para exibição principal
+
 // final Map<String, dynamic> _mockAiData = { ... };
 
 class AIScreen extends StatefulWidget {

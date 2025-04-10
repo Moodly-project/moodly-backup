@@ -25,7 +25,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
   // Use 10.0.2.2 para emulador Android
   final String _apiBaseUrl = 'http://10.0.2.2:3000/api';
 
-  // Mapa de ícones para humores - Ícones melhorados
+  // Mapa de ícones para humores
   final Map<String, IconData> _moodIcons = {
     'Feliz': Icons.emoji_emotions,
     'Ansioso': Icons.upcoming,
@@ -36,7 +36,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
     'Com Raiva': Icons.flash_on,
   };
 
-  // Mapa de cores para humores - Cores mais vibrantes e distintivas
+  // Mapa de cores para humores
   final Map<String, Color> _moodColors = {
     'Feliz': Colors.amber.shade500,
     'Ansioso': Colors.orange.shade600,
