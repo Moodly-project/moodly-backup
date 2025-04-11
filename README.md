@@ -9,7 +9,7 @@ Moodly é um aplicativo Flutter que funciona como um diário pessoal para regist
 Este projeto é fruto de um esforço colaborativo e iterativo. O código foi construído combinando:
 
 *   **Coleta de Repositórios:** Partes da estrutura e funcionalidades foram adaptadas de outros projetos e exemplos encontrados em nosso repositório.
-*   **Inspiração Online:** Buscamos soluções e ideias em documentações, tutoriais e exemplos da comunidade Flutter e Node.js (e um pouquinho de ctrl c ctrl v da web, e nao pode faltar uma pitadinha de uso de IA).
+*   **Inspiração Online:** Buscamos soluções e ideias em documentações, tutoriais e exemplos da comunidade Flutter e Node.js (um pouquinho de ctrl c ctrl v da web, e não pode faltar o uso de IA).
 *   **Desenvolvimento Incremental:** O código foi sendo refinado e modificado ao longo do tempo com base nas necessidades e feedbacks.
 
 O objetivo sempre foi criar um aplicativo funcional e visualmente agradável, mantendo a simplicidade onde possível.
@@ -19,7 +19,7 @@ O objetivo sempre foi criar um aplicativo funcional e visualmente agradável, ma
 *   **Diário de Emoções:** Registro diário de humor (Feliz, Ansioso, Calmo, etc.) com espaço para notas.
 *   **Visualização de Dados:** Tela de relatórios com gráficos (Pizza, Barras) mostrando distribuição de humor e frequência.
 *   **Autenticação:** Sistema de login e registro seguro (utilizando JWT).
-*   **Integração com IA (Configurável):** Tela para exibir análises geradas por uma API externa (Google Gemini, OpenAI) configurada pelo usuário com sua própria chave.
+*   **Integração com IA (Configurável):** Tela para exibir análises geradas por uma API externa (Google Gemini) configurada pelo usuário com sua própria chave.
 *   **Fluxo de Configuração Inicial:** Solicitação de aceite de Termos de Uso e configuração da chave de API da IA no primeiro uso.
 
 ## Como Executar o Projeto
@@ -40,7 +40,7 @@ Siga os passos abaixo para configurar e rodar o Moodly localmente.
     ```sql
     CREATE DATABASE IF NOT EXISTS moodly_db;
     ```
-2.  **Execute o Schema:** Abra o arquivo `backend/schema.sql` no seu cliente MySQL (como o SQL Workbench) ou execute o conteúdo do arquivo diretamente. Isso criará as tabelas `usuarios` e `entradas_diario` necessárias.
+2.  **Execute o Schema:** Abra o arquivo `backend/schema.sql` no seu cliente MySQL (como o SQL Workbench). Isso criará as tabelas `usuarios` e `entradas_diario` necessárias.
 
 ### 2. Executando o Backend (Servidor Node.js)
 

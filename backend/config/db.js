@@ -3,8 +3,8 @@ const mysql = require('mysql2/promise');
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',       // Usuário padrão do MySQL, ajuste se necessário
-  password: process.env.DB_PASSWORD || '', // Senha do seu MySQL, ajuste se necessário
+  user: process.env.DB_USER || 'root',       // Usuário do MySQL
+  password: process.env.DB_PASSWORD || '', // Senha do seu MySQL
   database: process.env.DB_NAME || 'moodly_db',
   waitForConnections: true,
   connectionLimit: 10,

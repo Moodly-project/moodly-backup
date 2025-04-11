@@ -110,7 +110,7 @@ class _AIScreenState extends State<AIScreen> {
     promptBuffer.writeln("Com base nessas entradas, forneça:");
     promptBuffer.writeln("1. SUMMARY: Um resumo conciso do humor predominante ou tendência geral em uma frase.");
     promptBuffer.writeln("2. INSIGHTS: Liste 2 ou 3 insights ou padrões interessantes que você observa (cada um começando com 'INSIGHT:').");
-    promptBuffer.writeln("3. SUGGESTIONS: Liste 2 ou 3 sugestões acionáveis baseadas nos insights (cada uma começando com 'SUGGESTION:').");
+    promptBuffer.writeln("3. SUGGESTIONS: Liste 2 ou 3 sugestões ACIONÁVEIS e ESPECÍFICAS baseadas nos insights e no conteúdo detalhado das entradas fornecidas. Evite sugestões genéricas como 'manter um registro mais detalhado', pois o usuário já faz isso. Foque em ações concretas relacionadas aos temas mencionados nas entradas (cada uma começando com 'SUGGESTION:').");
     promptBuffer.writeln(); // Linha em branco
     promptBuffer.writeln("Responda APENAS no formato solicitado, usando os prefixos SUMMARY:, INSIGHT:, SUGGESTION:.");
 

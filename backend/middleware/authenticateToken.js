@@ -21,7 +21,7 @@ function authenticateToken(req, res, next) {
     // Se o token for válido, anexa o payload decodificado (que contém o ID do usuário)
     // ao objeto req para uso nas rotas subsequentes
     req.user = user;
-    next(); // Passa para o próximo middleware ou rota
+    next(); // Passa para a proxima rota
   });
 }
 
