@@ -5,7 +5,7 @@ import 'package:moodyr/screens/auth/api_key_setup_screen.dart';
 class EulaScreen extends StatelessWidget {
   const EulaScreen({super.key});
 
-  // EULA formatada com estilo melhorado para visualização no aplicativo
+  // EULA
   final String eulaText = """
 Termos de Uso e Política de Privacidade - Moodly
 
@@ -151,7 +151,6 @@ Ao clicar em "Aceitar", você declara que leu, compreendeu e concorda com estes 
             const SizedBox(height: 12),
             TextButton(
               onPressed: () {
-                // Aqui você pode adicionar uma função para mais informações ou contato
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Para mais informações, entre em contato com suporte@moodly.app')),
                 );

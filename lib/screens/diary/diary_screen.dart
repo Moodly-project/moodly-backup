@@ -22,10 +22,10 @@ class _DiaryScreenState extends State<DiaryScreen> {
   final _storage = const FlutterSecureStorage(); // Instância do secure storage
 
   // URL Base da API (ajuste conforme necessário)
-  // Use 10.0.2.2 para emulador Android
+  // 10.0.2.2 emulador Android
   final String _apiBaseUrl = 'http://10.0.2.2:3000/api';
 
-  // Mapa de ícones para humores
+  // ícones para humores
   final Map<String, IconData> _moodIcons = {
     'Feliz': Icons.emoji_emotions,
     'Ansioso': Icons.upcoming,
@@ -36,7 +36,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
     'Com Raiva': Icons.flash_on,
   };
 
-  // Mapa de cores para humores
+  // cores para humores
   final Map<String, Color> _moodColors = {
     'Feliz': Colors.amber.shade500,
     'Ansioso': Colors.orange.shade600,
@@ -45,17 +45,6 @@ class _DiaryScreenState extends State<DiaryScreen> {
     'Animado': Colors.pink.shade500,
     'Grato': Colors.green.shade600,
     'Com Raiva': Colors.red.shade600,
-  };
-
-  // Mapa de descrições para humores
-  final Map<String, String> _moodDescriptions = {
-    'Feliz': 'Contente e satisfeito',
-    'Ansioso': 'Preocupado(a)',
-    'Calmo': 'Em paz',
-    'Triste': 'Sentindo melancolia',
-    'Animado': 'Cheio de energia',
-    'Grato': 'Apreciando a vida',
-    'Com Raiva': 'Sentindo frustração',
   };
 
   @override
@@ -91,7 +80,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
         headers: headers,
       );
 
-      if (!mounted) return; // Verificar se o widget ainda está montado
+      if (!mounted) return; // Verifica widget montado
 
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
@@ -102,14 +91,14 @@ class _DiaryScreenState extends State<DiaryScreen> {
             return DiaryEntry(
               id: item['id'].toString(),
               content: item['conteudo'],
-              date: DateTime.parse(item['data_entrada']), // Converte String para DateTime
+              date: DateTime.parse(item['data_entrada']),
               mood: item['humor'],
             );
           }).toList();
           _isLoading = false;
         });
       } else if (response.statusCode == 401 || response.statusCode == 403) {
-         // Implementar logout ou redirecionamento para login se token inválido/expirado
+         // logout ou redirecionamento para login se token inválido/expirado
         setState(() {
            _errorMessage = 'Sessão inválida. Por favor, faça login novamente.';
            _isLoading = false;
@@ -144,7 +133,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
   Future<void> _addEntry(DiaryEntry entry) async {
     try {
        final headers = await _getHeaders();
-       // Formata a data para 'YYYY-MM-DD' como esperado pelo backend
+       // Formata a data para 'YYYY-MM-DD'
        final formattedDate = DateFormat('yyyy-MM-dd').format(entry.date);
 
        final response = await http.post(
@@ -220,14 +209,14 @@ class _DiaryScreenState extends State<DiaryScreen> {
              TextButton(
                child: const Text('Cancelar'),
                onPressed: () {
-                 Navigator.of(ctx).pop(false); // Retorna false
+                 Navigator.of(ctx).pop(false);
                },
              ),
              TextButton(
                style: TextButton.styleFrom(foregroundColor: Colors.red),
                child: const Text('Excluir'),
                onPressed: () {
-                 Navigator.of(ctx).pop(true); // Retorna true
+                 Navigator.of(ctx).pop(true);
                },
              ),
            ],
@@ -235,12 +224,12 @@ class _DiaryScreenState extends State<DiaryScreen> {
        },
      );
 
-      // Se o usuário não confirmou, não fazer nada
+      // não confirmou, não fazer nada
      if (confirmDelete != true) {
        return;
      }
 
-     // Se confirmou, prosseguir com a deleção na API
+     // confirmou, prosseguir
      try {
         final headers = await _getHeaders();
         final response = await http.delete(
@@ -276,7 +265,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
     final _contentController = TextEditingController(text: entry?.content ?? '');
     DateTime _selectedDate = entry?.date ?? DateTime.now();
     String? _selectedMood = entry?.mood;
-    final _formKey = GlobalKey<FormState>(); // Chave para o formulário no BottomSheet
+    final _formKey = GlobalKey<FormState>();
 
     showModalBottomSheet(
       context: context,

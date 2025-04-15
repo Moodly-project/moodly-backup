@@ -3,10 +3,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:moodyr/screens/auth/login_screen.dart';
 import 'package:moodyr/screens/auth/eula_screen.dart';
 import 'package:moodyr/screens/auth/api_key_setup_screen.dart';
-import 'package:moodyr/screens/diary/diary_screen.dart'; // Se você tiver lógica para ir direto para o diário
+import 'package:moodyr/screens/diary/diary_screen.dart'; // lógica para o diário
 import 'package:intl/date_symbol_data_local.dart';
 
-void main() async { // Precisa ser async agora
+void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Necessário para SharedPreferences/SecureStorage antes do runApp
   await initializeDateFormatting('pt_BR', null);
 
@@ -40,6 +40,7 @@ class MoodlyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Moodly',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // Use cores mais consistentes com as telas novas
         primarySwatch: Colors.teal, // Ou Colors.deepPurple, etc.

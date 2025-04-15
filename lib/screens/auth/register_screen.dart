@@ -32,9 +32,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _isLoading = true; // Inicia o carregamento
       });
 
-      // !! IMPORTANTE: Substitua pela URL correta do seu backend !!
       // Emulador Android: 'http://10.0.2.2:3000/api/auth/register'
-      const String apiUrl = 'http://10.0.2.2:3000/api/auth/register'; // Exemplo para Emulador Android
+      const String apiUrl = 'http://10.0.2.2:3000/api/auth/register';
 
       try {
         final response = await http.post(
@@ -60,7 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             );
             Navigator.pop(context); // Volta para a tela de login
           } else {
-            // Erro (ex: email duplicado, validação falhou no backend)
+            // Erro
              ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Falha no registro: $message'), backgroundColor: Colors.red),
             );
@@ -68,7 +67,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         }
       } catch (e) {
          if (mounted) {
-            // Erro de conexão ou outro erro
+            // Erro de conexão ou outr
              ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Erro ao conectar: ${e.toString()}'), backgroundColor: Colors.red),
             );
@@ -91,7 +90,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         title: const Text('Criar Conta'),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        foregroundColor: Colors.grey.shade800, // Cor do ícone de voltar e título
+        foregroundColor: Colors.grey.shade800, // icone de voltar
       ),
       extendBodyBehindAppBar: true,
       body: Container(
@@ -107,7 +106,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(32.0, 100.0, 32.0, 32.0), // Ajuste o padding superior
+            padding: const EdgeInsets.fromLTRB(32.0, 100.0, 32.0, 32.0),
             child: Form(
               key: _formKey,
               child: Column(
@@ -183,14 +182,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 30),
                   _isLoading
-                    ? const CircularProgressIndicator() // Mostra indicador de carregamento
+                    ? const CircularProgressIndicator() // indicador de carregamento
                     : CustomButton(
                         text: 'Registrar',
                         onPressed: _register,
                       ),
                   const SizedBox(height: 20),
                   TextButton(
-                     onPressed: () => Navigator.pop(context), // Volta para a tela de login
+                     onPressed: () => Navigator.pop(context), // tela de login
                      child: Text(
                        'Já tem uma conta? Faça login',
                        style: TextStyle(color: Colors.deepPurple.shade700),

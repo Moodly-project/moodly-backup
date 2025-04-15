@@ -4,6 +4,11 @@ const authenticateToken = require('../middleware/authenticateToken'); // Middlew
 
 const router = express.Router();
 
+// Helper function for date validation
+const isValidDateFormat = (dateString) => {
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateString);
+};
+
 // Rota para buscar todas as entradas do diário do usuário logado
 router.get('/', authenticateToken, async (req, res) => {
   const usuarioId = req.user.id; // ID do usuário obtido do token JWT
@@ -30,7 +35,7 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 
   // Validação básica do formato da data
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(data_entrada)) {
+  if (!isValidDateFormat(data_entrada)) {
      return res.status(400).json({ message: 'Formato de data inválido. Use YYYY-MM-DD.' });
   }
 
@@ -56,7 +61,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
   if (!conteudo || !humor || !data_entrada) {
     return res.status(400).json({ message: 'Conteúdo, humor e data são obrigatórios para atualização.' });
   }
-   if (!/^\d{4}-\d{2}-\d{2}$/.test(data_entrada)) {
+   if (!isValidDateFormat(data_entrada)) {
      return res.status(400).json({ message: 'Formato de data inválido. Use YYYY-MM-DD.' });
   }
 

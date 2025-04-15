@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:moodyr/screens/auth/login_screen.dart'; // Importar a tela de Login
-import 'package:url_launcher/url_launcher.dart'; // Adicione url_launcher no pubspec.yaml
+import 'package:moodyr/screens/auth/login_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ApiKeySetupScreen extends StatefulWidget {
   const ApiKeySetupScreen({super.key});
@@ -56,7 +56,7 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Para habilitar os recursos de análise e sugestões personalizadas do Moodly AI, você precisa fornecer sua própria chave de API de um serviço compatível (como OpenAI ou Google Gemini).',
+                'Para habilitar os recursos de análise e sugestões personalizadas do Moodly AI, você precisa fornecer sua própria chave de API de um serviço compatível (como Google Gemini).',
                 style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
               ),
               const SizedBox(height: 24),
@@ -72,7 +72,7 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen> {
                   if (value == null || value.trim().isEmpty) {
                     return 'Por favor, insira sua chave de API.';
                   }
-                  // Adicionar validações mais específicas se necessário (ex: prefixo 'sk-' ou 'AIza')
+                  
                   return null;
                 },
               ),
@@ -83,19 +83,12 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen> {
               ),
               const SizedBox(height: 12),
               _buildInstructionTile(
-                title: 'Google Gemini (Recomendado - Gratuito para começar):',
+                title: 'Google Gemini (Recomendado - Gratuito):',
                 url: 'https://aistudio.google.com/app/apikey',
-                instructions: '1. Acesse o Google AI Studio.\n2. Faça login com sua conta Google.\n3. Clique em "Create API key in new project".\n4. Copie a chave gerada e cole acima.',
-                icon: Icons.android, // Ícone exemplo
+                instructions: '1. Acesse o Google AI Studio.\n2. Faça login com sua conta Google.\n3. Clique em "Get API key".\n4. Copie a chave gerada e cole acima.',
+                icon: Icons.android,
               ),
                const SizedBox(height: 16),
-              // REMOVIDO: Card de instruções para OpenAI
-              // _buildInstructionTile(
-              //   title: 'OpenAI (ChatGPT):',
-              //   url: 'https://platform.openai.com/api-keys',
-              //   instructions: '1. Crie uma conta ou faça login na plataforma OpenAI.\n2. Navegue até a seção "API keys".\n3. Clique em "Create new secret key".\n4. Copie a chave gerada e cole acima. (Pode haver custos associados)',
-              //   icon: Icons.api, // Ícone exemplo
-              // ),
 
               const SizedBox(height: 40),
               Center(

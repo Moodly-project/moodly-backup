@@ -22,7 +22,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
   final _storage = const FlutterSecureStorage();
   final String _apiBaseUrl = 'http://10.0.2.2:3000/api';
 
-  // Mapa de cores para humores
+  // cores para humores
   final Map<String, Color> _moodColors = {
     'Feliz': Colors.amber.shade500,
     'Ansioso': Colors.orange.shade600,
@@ -33,7 +33,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
     'Com Raiva': Colors.red.shade600,
   };
   
-  // Mapa de ícones para humores (adicionado para corrigir o erro)
+  // ícones para humores
   final Map<String, IconData> _moodIcons = {
     'Feliz': Icons.emoji_emotions,
     'Ansioso': Icons.upcoming,
@@ -57,12 +57,12 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
     super.dispose();
   }
 
-  // Função auxiliar para obter o token JWT
+  // Função auxiliar token JWT
   Future<String?> _getToken() async {
     return await _storage.read(key: 'jwt_token');
   }
 
-  // Função auxiliar para criar headers com o token
+  // Função auxiliar criar headers com o token
   Future<Map<String, String>> _getHeaders() async {
     String? token = await _getToken();
     return {
@@ -293,7 +293,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
   }
 
   Widget _buildSummaryTab() {
-    // Frequência por dia da semana
+    // dia da semana
     Map<int, int> dayOfWeekFrequency = {};
     Map<int, Map<String, int>> dayOfWeekMoods = {};
     
@@ -361,12 +361,6 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
                         },
                         reservedSize: 30,
                       ),
-                    ),
-                    rightTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
                     ),
                   ),
                   borderData: FlBorderData(show: false),
@@ -521,7 +515,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
       monthlyMoods[month]![entry.mood] = (monthlyMoods[month]![entry.mood] ?? 0) + 1;
     }
     
-    // Limitar aos últimos 3 meses
+    // últimos 3 meses
     List<String> months = monthlyMoods.keys.toList();
     months.sort(); // Ordenar cronologicamente
     
@@ -531,7 +525,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
     
     return Column(
       children: months.map((month) {
-        // Encontrar o humor predominante do mês
+        // humor predominante do mês
         String? dominantMood;
         int maxCount = 0;
         
