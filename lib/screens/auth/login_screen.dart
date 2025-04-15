@@ -7,6 +7,9 @@ import 'package:moodyr/widgets/custom_button.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:moodyr/screens/auth/api_key_setup_screen.dart';
 
+import '../../validators/email_login_validator.dart';
+import '../../validators/password_login_validator.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -63,20 +66,28 @@ class _LoginScreenState extends State<LoginScreen> {
               );
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Erro ao processar login: Token não recebido.'), backgroundColor: Colors.red),
+                const SnackBar(
+                    content:
+                        Text('Erro ao processar login: Token não recebido.'),
+                    backgroundColor: Colors.red),
               );
             }
           } else {
-            final message = responseBody['message'] ?? 'Erro desconhecido no login';
+            final message =
+                responseBody['message'] ?? 'Erro desconhecido no login';
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Falha no login: $message'), backgroundColor: Colors.red),
+              SnackBar(
+                  content: Text('Falha no login: $message'),
+                  backgroundColor: Colors.red),
             );
           }
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erro ao conectar: ${e.toString()}'), backgroundColor: Colors.red),
+            SnackBar(
+                content: Text('Erro ao conectar: ${e.toString()}'),
+                backgroundColor: Colors.red),
           );
         }
         print('Erro na requisição HTTP: $e');
@@ -158,8 +169,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
-                      if (value == null || value.isEmpty || !value.contains('@')) {
-                        return 'Por favor, insira um email válido';
+                      if (value == null ||
+                          !EmailLoginValidator.isValidEmailLogin(value)) {
+                        return 'E-mail Inválido';
                       }
                       return null;
                     },
@@ -178,25 +190,28 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     obscureText: true,
                     validator: (value) {
-                      if (value == null || value.isEmpty || value.length < 6) {
-                        return 'A senha deve ter pelo menos 6 caracteres';
+                      if (value == null ||
+                          !PasswordLoginValidator.isSecurePassWordLogin(
+                              value)) {
+                        return 'Senha Inválida ';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 30),
                   _isLoading
-                    ? const CircularProgressIndicator()
-                    : CustomButton(
-                        text: 'Entrar',
-                        onPressed: _login,
-                      ),
+                      ? const CircularProgressIndicator()
+                      : CustomButton(
+                          text: 'Entrar',
+                          onPressed: _login,
+                        ),
                   const SizedBox(height: 20),
                   TextButton(
                     onPressed: _navigateToRegister,
                     child: Text(
                       'Não tem uma conta? Registre-se',
-                      style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -205,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     label: const Text('Configurar Chave de API da IA'),
                     onPressed: _navigateToApiKeySetup,
                     style: TextButton.styleFrom(
-                       foregroundColor: Colors.grey.shade600, 
+                      foregroundColor: Colors.grey.shade600,
                     ),
                   ),
                 ],
@@ -216,4 +231,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-} 
+}
