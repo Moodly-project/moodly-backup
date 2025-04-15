@@ -126,8 +126,8 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.deepPurple.shade300,
-                Colors.blue.shade300,
+                Theme.of(context).colorScheme.primaryContainer,
+                Theme.of(context).colorScheme.secondaryContainer,
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -136,7 +136,9 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
+          indicatorColor: Theme.of(context).colorScheme.primary,
+          labelColor: Theme.of(context).colorScheme.primary,
+          unselectedLabelColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
           tabs: const [
             Tab(text: 'Geral'),
             Tab(text: 'Resumo'),
@@ -157,7 +159,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
                       ElevatedButton(
                         onPressed: _fetchEntries,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepPurple.shade400,
+                          backgroundColor: Theme.of(context).colorScheme.primary,
                           foregroundColor: Colors.white,
                         ),
                         child: const Text('Tentar Novamente'),
@@ -170,14 +172,14 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.bar_chart, size: 80, color: Colors.grey.shade300),
+                          Icon(Icons.bar_chart, size: 80, color: Theme.of(context).colorScheme.secondary.withOpacity(0.4)),
                           const SizedBox(height: 16),
                           Text(
                             'Sem dados suficientes',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey.shade700,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -186,7 +188,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
                             child: Text(
                               'Adicione mais entradas no seu diário para gerar relatórios e insights',
                               textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.grey.shade600),
+                              style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                             ),
                           ),
                         ],
@@ -196,8 +198,8 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            Colors.purple.shade50,
-                            Colors.blue.shade50,
+                            Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                            Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.3),
                           ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
@@ -235,16 +237,23 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
                   sectionsSpace: 2,
                   centerSpaceRadius: 40,
                   sections: moodCounts.entries.map((entry) {
+                    final isTouched = false;
+                    final fontSize = isTouched ? 14.0 : 12.0;
+                    final radius = isTouched ? 110.0 : 100.0;
+                    final color = _moodColors[entry.key] ?? Colors.grey;
                     return PieChartSectionData(
-                      color: _moodColors[entry.key] ?? Colors.grey,
+                      color: color,
                       value: entry.value.toDouble(),
-                      title: '${entry.key}: ${entry.value}',
-                      radius: 100,
-                      titleStyle: const TextStyle(
-                        fontSize: 12,
+                      title: '${(entry.value / _diaryEntries.length * 100).toStringAsFixed(0)}%\n${entry.key}',
+                      radius: radius,
+                      titleStyle: TextStyle(
+                        fontSize: fontSize,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: color.computeLuminance() > 0.5 ? Colors.black87 : Colors.white,
+                        shadows: const [Shadow(color: Colors.black26, blurRadius: 2)],
                       ),
+                      badgeWidget: _buildMoodIconBadge(entry.key, color, isTouched),
+                      badgePositionPercentageOffset: .98,
                     );
                   }).toList(),
                 ),
@@ -409,6 +418,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      color: Theme.of(context).cardColor.withOpacity(0.8),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -416,9 +426,10 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
           children: [
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
             const SizedBox(height: 16),
@@ -558,6 +569,157 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
           ),
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildMoodIconBadge(String mood, Color color, bool isTouched) {
+    return AnimatedContainer(
+      duration: PieChart.defaultDuration,
+      width: isTouched ? 40 : 32,
+      height: isTouched ? 40 : 32,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        border: Border.all(color: color, width: 2),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: Colors.black.withOpacity(.5),
+            offset: const Offset(3, 3),
+            blurRadius: 3,
+          ),
+        ],
+      ),
+      child: Center(
+        child: Icon(
+          _moodIcons[mood] ?? Icons.question_mark,
+          color: color,
+          size: isTouched ? 20 : 16,
+        ),
+      ),
+    );
+  }
+
+  LineChartData _buildLineChartData() {
+    // Mapear humores para valores numéricos (simplificado)
+    Map<String, double> moodValues = {
+      'Com Raiva': 1.0,
+      'Triste': 2.0,
+      'Ansioso': 3.0,
+      'Calmo': 4.0,
+      'Grato': 5.0,
+      'Feliz': 6.0,
+      'Animado': 7.0,
+    };
+
+    List<FlSpot> spots = [];
+    for (int i = 0; i < _diaryEntries.length; i++) {
+      double moodValue = moodValues[_diaryEntries[i].mood] ?? 3.5; // Valor padrão se não encontrar
+      spots.add(FlSpot(i.toDouble(), moodValue));
+    }
+
+    return LineChartData(
+      gridData: FlGridData(
+        show: true,
+        drawVerticalLine: true,
+        horizontalInterval: 1,
+        verticalInterval: 1,
+        getDrawingHorizontalLine: (value) {
+          return FlLine(
+            color: Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.3),
+            strokeWidth: 1,
+          );
+        },
+        getDrawingVerticalLine: (value) {
+          return FlLine(
+             color: Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.3),
+            strokeWidth: 1,
+          );
+        },
+      ),
+      titlesData: FlTitlesData(
+        show: true,
+        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            reservedSize: 30,
+            interval: max(1, (_diaryEntries.length / 6).floorToDouble()), // Mostrar menos labels se muitos pontos
+            getTitlesWidget: (value, meta) {
+              int index = value.toInt();
+              if (index >= 0 && index < _diaryEntries.length) {
+                return SideTitleWidget(
+                  axisSide: meta.axisSide,
+                  space: 8.0,
+                  child: Text(
+                    DateFormat('dd/MM').format(_diaryEntries[index].date),
+                     style: TextStyle(
+                       color: Theme.of(context).colorScheme.secondary,
+                       fontWeight: FontWeight.bold,
+                       fontSize: 10,
+                     ),
+                  ),
+                );
+              }
+              return Container();
+            },
+          ),
+        ),
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            interval: 1,
+            getTitlesWidget: (value, meta) {
+                String text = '';
+                // Encontrar o humor correspondente ao valor
+                moodValues.forEach((mood, val) {
+                  if (val == value) {
+                    text = mood;
+                  }
+                });
+                 return Text(text, style: TextStyle(
+                   color: Theme.of(context).colorScheme.secondary,
+                   fontWeight: FontWeight.bold,
+                   fontSize: 10,
+                   ), textAlign: TextAlign.left);
+            },
+            reservedSize: 50, // Aumentar espaço para nomes
+          ),
+        ),
+      ),
+      borderData: FlBorderData(
+          show: true,
+          border: Border.all(color: Theme.of(context).colorScheme.secondaryContainer, width: 1)),
+      minX: 0,
+      maxX: _diaryEntries.length.toDouble() - 1,
+      minY: 1,
+      maxY: 7,
+      lineBarsData: [
+        LineChartBarData(
+          spots: spots,
+          isCurved: true,
+          gradient: LinearGradient(
+            colors: [
+               Theme.of(context).colorScheme.primary,
+               Theme.of(context).colorScheme.tertiary ?? Theme.of(context).colorScheme.primary, // Fallback
+            ],
+          ),
+          barWidth: 5,
+          isStrokeCapRound: true,
+          dotData: const FlDotData(
+            show: false,
+          ),
+          belowBarData: BarAreaData(
+            show: true,
+            gradient: LinearGradient(
+              colors: [
+                 Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                 Theme.of(context).colorScheme.tertiary?.withOpacity(0.3) ?? Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              ].map((color) => color).toList(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 } 

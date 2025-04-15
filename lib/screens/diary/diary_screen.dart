@@ -286,8 +286,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Colors.blue.shade50,
-                    Colors.purple.shade50,
+                    Theme.of(context).colorScheme.primaryContainer,
+                    Theme.of(context).colorScheme.secondaryContainer,
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -316,14 +316,14 @@ class _DiaryScreenState extends State<DiaryScreen> {
                           entry == null ? 'Como você está hoje?' : 'Revisando seu dia',
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: Colors.deepPurple.shade700
+                            color: Theme.of(context).colorScheme.primary
                           ),
                         ),
                       ),
                       const SizedBox(height: 30),
                       Text('Data:', style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple.shade600
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.8)
                       )),
                       Card(
                         elevation: 0,
@@ -334,10 +334,10 @@ class _DiaryScreenState extends State<DiaryScreen> {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: ListTile(
-                            leading: Icon(Icons.calendar_today, color: Colors.deepPurple.shade400),
+                            leading: Icon(Icons.calendar_today, color: Theme.of(context).colorScheme.primary),
                             title: Text(
                               DateFormat('EEEE, dd MMMM yyyy', 'pt_BR').format(_selectedDate),
-                              style: TextStyle(color: Colors.grey.shade800)
+                              style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)
                             ),
                             onTap: () async {
                               final DateTime? picked = await showDatePicker(
@@ -349,7 +349,15 @@ class _DiaryScreenState extends State<DiaryScreen> {
                                   return Theme(
                                     data: Theme.of(context).copyWith(
                                       colorScheme: ColorScheme.light(
-                                        primary: Colors.deepPurple.shade300,
+                                        primary: Theme.of(context).colorScheme.primary,
+                                        onPrimary: Colors.white,
+                                        surface: Theme.of(context).colorScheme.surface,
+                                        onSurface: Theme.of(context).colorScheme.onSurface,
+                                      ),
+                                      textButtonTheme: TextButtonThemeData(
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Theme.of(context).colorScheme.primary,
+                                        ),
                                       ),
                                     ),
                                     child: child!,
@@ -366,78 +374,53 @@ class _DiaryScreenState extends State<DiaryScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      Text('Como você está se sentindo?', style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple.shade600
+                      Text('Humor:', style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                         fontWeight: FontWeight.bold,
+                         color: Theme.of(context).colorScheme.primary.withOpacity(0.8)
                       )),
-                      const SizedBox(height: 12),
                       Card(
-                        elevation: 0,
-                        margin: EdgeInsets.zero,
-                        color: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: DropdownButtonFormField<String>(
-                          value: _selectedMood,
-                          hint: const Text('Selecione seu humor'),
-                          items: _moodIcons.keys.map((String mood) {
-                            return DropdownMenuItem<String>(
-                              value: mood,
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    backgroundColor: _moodColors[mood]?.withOpacity(0.2),
-                                    radius: 16,
-                                    child: Icon(_moodIcons[mood], color: _moodColors[mood], size: 20),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          mood, 
-                                          style: TextStyle(
-                                            color: Colors.grey.shade900,
-                                            fontWeight: FontWeight.w600
-                                          )
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                         elevation: 0,
+                         color: Colors.white70,
+                         shape: RoundedRectangleBorder(
+                           borderRadius: BorderRadius.circular(15),
+                         ),
+                         child: Padding(
+                           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                           child: DropdownButtonFormField<String>(
+                              value: _selectedMood,
+                              items: _moodIcons.keys.map((String mood) {
+                                 return DropdownMenuItem<String>(
+                                   value: mood,
+                                   child: Row(
+                                     children: [
+                                       Icon(_moodIcons[mood], color: _moodColors[mood], size: 20),
+                                       const SizedBox(width: 10),
+                                       Text(mood),
+                                     ],
+                                   ),
+                                 );
+                              }).toList(),
+                              onChanged: (String? newValue) {
+                                if (newValue != null) {
+                                  setModalState(() {
+                                    _selectedMood = newValue;
+                                  });
+                                }
+                              },
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
                               ),
-                            );
-                          }).toList(),
-                          onChanged: (String? newValue) {
-                            setModalState(() {
-                              _selectedMood = newValue;
-                            });
-                          },
-                          validator: (value) => value == null ? 'Selecione um humor' : null,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              borderSide: BorderSide.none,
-                            ),
-                            filled: true,
-                            fillColor: Colors.transparent,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          ),
-                          dropdownColor: Colors.white,
-                          borderRadius: BorderRadius.circular(15),
-                          icon: Icon(Icons.arrow_drop_down, color: Colors.deepPurple.shade400),
-                          isExpanded: true,
-                        ),
-                      ),
+                              validator: (value) => value == null ? 'Por favor, selecione um humor' : null,
+                              icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.primary),
+                           ),
+                         ),
+                       ),
                       const SizedBox(height: 20),
-                      Text('O que você gostaria de compartilhar?', style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple.shade600
+                      Text('Diário:', style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                         fontWeight: FontWeight.bold,
+                         color: Theme.of(context).colorScheme.primary.withOpacity(0.8)
                       )),
-                      const SizedBox(height: 12),
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -464,46 +447,46 @@ class _DiaryScreenState extends State<DiaryScreen> {
                             contentPadding: const EdgeInsets.all(16),
                           ),
                           validator: (value) => value == null || value.isEmpty ? 'Por favor, compartilhe seus pensamentos' : null,
-                          style: TextStyle(color: Colors.grey.shade800),
+                          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                         ),
                       ),
                       const SizedBox(height: 30),
-                      Center(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurple.shade400,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancelar'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Theme.of(context).colorScheme.secondary,
                             ),
-                            elevation: 2,
                           ),
-                          onPressed: () {
-                            // Validar o formulário antes de salvar
-                            if (_formKey.currentState!.validate()) {
-                              final newEntry = DiaryEntry(
-                                id: entry?.id ?? 'temp_id', // Usa ID existente ou temporário
-                                content: _contentController.text,
-                                date: _selectedDate,
-                                mood: _selectedMood!,
-                              );
-
-                              if (entry == null) {
-                                _addEntry(newEntry);
-                              } else {
-                                _updateEntry(newEntry);
+                          const SizedBox(width: 12),
+                          ElevatedButton(
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                final newEntry = DiaryEntry(
+                                  id: entry?.id ?? '',
+                                  content: _contentController.text,
+                                  date: _selectedDate,
+                                  mood: _selectedMood!,
+                                );
+                                if (entry == null) {
+                                  _addEntry(newEntry);
+                                } else {
+                                  _updateEntry(newEntry);
+                                }
+                                Navigator.pop(context);
                               }
-                              Navigator.pop(context); // Fecha o BottomSheet apenas se validou
-                            }
-                          },
-                          child: Text(
-                            entry == null ? 'Salvar entrada' : 'Atualizar entrada',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            },
+                             style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: Text(entry == null ? 'Salvar Entrada' : 'Atualizar Entrada'),
                           ),
-                        ),
+                        ],
                       ),
-                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
@@ -540,8 +523,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
            decoration: BoxDecoration(
              gradient: LinearGradient(
                 colors: [
-                 Colors.deepPurple.shade300,
-                 Colors.blue.shade300,
+                 Theme.of(context).colorScheme.primaryContainer,
+                 Theme.of(context).colorScheme.secondaryContainer,
                ],
                begin: Alignment.topLeft,
                end: Alignment.bottomRight,
@@ -576,8 +559,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
            decoration: BoxDecoration(
              gradient: LinearGradient(
                 colors: [
-                 Colors.purple.shade50,
-                 Colors.blue.shade50,
+                 Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                 Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.3),
                ],
                begin: Alignment.topCenter,
                end: Alignment.bottomCenter,
@@ -589,7 +572,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddEditEntrySheet(),
         tooltip: 'Adicionar Entrada',
-        backgroundColor: Colors.deepPurple.shade400,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         child: const Icon(Icons.add, color: Colors.white),
         elevation: 4,
       ),
@@ -607,16 +590,16 @@ class _DiaryScreenState extends State<DiaryScreen> {
           child: Column(
              mainAxisAlignment: MainAxisAlignment.center,
              children: [
-                 Icon(Icons.error_outline, color: Colors.red, size: 60),
+                 Icon(Icons.error_outline, color: Colors.red.shade400, size: 60),
                  const SizedBox(height: 16),
-                 Text(_errorMessage!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.red, fontSize: 16)),
+                 Text(_errorMessage!, textAlign: TextAlign.center, style: TextStyle(color: Colors.red.shade700, fontSize: 16)),
                  const SizedBox(height: 16),
                  ElevatedButton.icon(
                    icon: const Icon(Icons.refresh),
                    label: const Text('Tentar Novamente'),
                    onPressed: _fetchEntries,
                    style: ElevatedButton.styleFrom(
-                     backgroundColor: Colors.deepPurple.shade400,
+                     backgroundColor: Theme.of(context).colorScheme.primary,
                      foregroundColor: Colors.white,
                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -633,24 +616,24 @@ class _DiaryScreenState extends State<DiaryScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.book_outlined, size: 80, color: Colors.deepPurple.shade200),
+              Icon(Icons.book_outlined, size: 80, color: Theme.of(context).colorScheme.secondary.withOpacity(0.5)),
               const SizedBox(height: 24),
               Text(
                 'Seu diário está vazio',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.deepPurple.shade700),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
               ),
               const SizedBox(height: 12),
               Text(
                 'Registre como você se sente hoje tocando no botão abaixo',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.deepPurple.shade400),
+                style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.secondary),
               ),
               const SizedBox(height: 40),
               ElevatedButton.icon(
                 icon: const Icon(Icons.add),
                 label: const Text('Nova entrada'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple.shade400,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),

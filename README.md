@@ -53,7 +53,7 @@ Siga os passos abaixo para configurar e rodar o Moodly localmente.
     npm install
     ```
     Isso instalará pacotes como `express`, `mysql2`, `cors`, `bcrypt`, `jsonwebtoken`, etc., definidos no `package.json` (certifique-se de que ele exista e esteja correto).
-3.  **Configure as Credenciais do Banco:** **Importante:** Verifique no código do servidor backend (provavelmente em um arquivo como `server.js`, `db.js` ou `config.js`) onde as credenciais de conexão com o banco de dados MySQL (host, usuário, senha, nome do banco) são definidas e ajuste-as para corresponder à sua configuração local.
+3.  **Configure as Credenciais do Banco:** **Importante:** Verifique no código do servidor backend (como `server.js`, `db.js` ou `config.js`) onde as credenciais de conexão com o banco de dados MySQL (host, usuário, senha, nome do banco) são definidas e ajuste-as para corresponder à sua configuração local.
 4.  **Inicie o Servidor:** Execute o comando para iniciar o servidor. Pode ser um dos seguintes (verifique seu `package.json` ou o arquivo principal do servidor):
     ```bash
     npm start

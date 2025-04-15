@@ -219,8 +219,8 @@ class _AIScreenState extends State<AIScreen> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.teal.shade300,
-                Colors.cyan.shade300,
+                Theme.of(context).colorScheme.primaryContainer,
+                Theme.of(context).colorScheme.secondaryContainer,
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -232,8 +232,8 @@ class _AIScreenState extends State<AIScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Colors.cyan.shade50,
-              Colors.teal.shade50,
+              Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+              Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.3),
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -267,7 +267,7 @@ class _AIScreenState extends State<AIScreen> {
                 label: const Text('Tentar Novamente'),
                 onPressed: _loadInitialDataAndGenerateAIContent,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal.shade400,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.white,
                 ),
               ),
@@ -281,24 +281,24 @@ class _AIScreenState extends State<AIScreen> {
         padding: const EdgeInsets.all(16.0),
         children: [
           _buildSectionTitle('Resumo da IA', Icons.lightbulb_outline),
-          _buildInfoCard(_aiSummary ?? 'Análise indisponível.', Colors.blueAccent.shade400),
+          _buildInfoCard(_aiSummary ?? 'Análise indisponível.', Theme.of(context).colorScheme.primary),
           const SizedBox(height: 20),
           
           _buildSectionTitle('Insights da IA', Icons.insights),
           if (_aiInsights.isEmpty) 
-             _buildInfoCard("Nenhum insight gerado.", Colors.grey) 
+             _buildInfoCard("Nenhum insight gerado.", Theme.of(context).colorScheme.secondary.withOpacity(0.5)) 
           else 
              ..._aiInsights
-                .map((insight) => _buildInfoCard(insight, Colors.deepPurpleAccent.shade100))
+                .map((insight) => _buildInfoCard(insight, Theme.of(context).colorScheme.secondary))
                 .toList(),
           const SizedBox(height: 20),
 
           _buildSectionTitle('Sugestões da IA', Icons.spa),
           if (_aiSuggestions.isEmpty) 
-             _buildInfoCard("Nenhuma sugestão gerada.", Colors.grey) 
+             _buildInfoCard("Nenhuma sugestão gerada.", Theme.of(context).colorScheme.secondary.withOpacity(0.5)) 
           else 
             ..._aiSuggestions
-              .map((suggestion) => _buildInfoCard(suggestion, Colors.greenAccent.shade400))
+              .map((suggestion) => _buildInfoCard(suggestion, Theme.of(context).colorScheme.tertiary ?? Theme.of(context).colorScheme.primary.withOpacity(0.7)))
               .toList(),
           const SizedBox(height: 20),
         ],
@@ -311,14 +311,14 @@ class _AIScreenState extends State<AIScreen> {
       padding: const EdgeInsets.only(bottom: 12.0, top: 8.0),
       child: Row(
         children: [
-          Icon(icon, color: Colors.teal.shade600, size: 24),
+          Icon(icon, color: Theme.of(context).colorScheme.primary, size: 24),
           const SizedBox(width: 8),
           Text(
             title,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.teal.shade800,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
         ],
@@ -337,12 +337,12 @@ class _AIScreenState extends State<AIScreen> {
       child: Container(
         decoration: BoxDecoration(
           border: Border(left: BorderSide(color: accentColor, width: 5)),
-          color: Colors.white.withOpacity(0.8)
+          color: Theme.of(context).cardColor.withOpacity(0.9)
         ),
         padding: const EdgeInsets.all(16.0),
         child: Text(
           text,
-          style: TextStyle(fontSize: 15, color: Colors.grey.shade900, height: 1.4),
+          style: TextStyle(fontSize: 15, color: Theme.of(context).textTheme.bodyLarge?.color, height: 1.4),
         ),
       ),
     );

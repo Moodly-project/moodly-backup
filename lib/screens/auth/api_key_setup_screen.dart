@@ -102,6 +102,21 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen> {
                   child: const Text('Salvar Chave e Continuar'),
                 ),
               ),
+              const SizedBox(height: 16),
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    );
+                  },
+                  child: Text(
+                    'Pular por agora',
+                    style: TextStyle(color: Colors.grey.shade600),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

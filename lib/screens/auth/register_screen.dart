@@ -90,15 +90,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
         title: const Text('Criar Conta'),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        foregroundColor: Colors.grey.shade800, // icone de voltar
+        foregroundColor: Theme.of(context).colorScheme.primary,
       ),
       extendBodyBehindAppBar: true,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Colors.purple.shade100,
-              Colors.blue.shade100,
+              Theme.of(context).colorScheme.primaryContainer.withOpacity(0.6),
+              Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.6),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -117,7 +117,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade800,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -182,7 +182,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 30),
                   _isLoading
-                    ? const CircularProgressIndicator() // indicador de carregamento
+                    ? CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            Theme.of(context).colorScheme.primary),
+                      )
                     : CustomButton(
                         text: 'Registrar',
                         onPressed: _register,
@@ -192,7 +195,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                      onPressed: () => Navigator.pop(context), // tela de login
                      child: Text(
                        'Já tem uma conta? Faça login',
-                       style: TextStyle(color: Colors.deepPurple.shade700),
+                       style: TextStyle(color: Theme.of(context).colorScheme.primary),
                      ),
                   ),
                 ],
