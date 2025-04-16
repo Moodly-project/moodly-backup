@@ -7,6 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:moodyr/screens/report/report_screen.dart';
 import 'package:moodyr/screens/auth/login_screen.dart';
 import 'package:moodyr/screens/ai/ai_screen.dart';
+import 'package:moodyr/screens/ai/chat_screen.dart';
 
 class DiaryScreen extends StatefulWidget {
   const DiaryScreen({super.key});
@@ -544,6 +545,16 @@ class _DiaryScreenState extends State<DiaryScreen> {
              icon: const Icon(Icons.bar_chart),
              tooltip: 'Ver relatórios',
              onPressed: _navigateToReportScreen,
+           ),
+           // NOVO Ícone para Chat IA
+           IconButton(
+             icon: const Icon(Icons.chat_bubble_outline),
+             tooltip: 'Chat com IA',
+             onPressed: () {
+               Navigator.of(context).push(
+                 MaterialPageRoute(builder: (_) => const ChatScreen()),
+               );
+             },
            ),
            // Botão de logout
            IconButton(
