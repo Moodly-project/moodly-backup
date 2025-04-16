@@ -1,6 +1,9 @@
 import 'dart:convert'; // Para jsonEncode
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http; // Importa o pacote http
+import 'package:moodyr/validators/email_register_validator.dart';
+import 'package:moodyr/validators/password_register_validator.dart';
+import 'package:moodyr/validators/username_register_validator.dart';
 import 'package:moodyr/widgets/custom_button.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -48,9 +51,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           }),
         );
 
-        if (mounted) { // Verifica se o widget ainda está na árvore
-           final responseBody = jsonDecode(response.body);
-           final message = responseBody['message'] ?? 'Erro desconhecido';
+        if (mounted) {
+          // Verifica se o widget ainda está na árvore
+          final responseBody = jsonDecode(response.body);
+          final message = responseBody['message'] ?? 'Erro desconhecido';
 
           if (response.statusCode == 201) {
             // Sucesso
@@ -60,18 +64,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
             Navigator.pop(context); // Volta para a tela de login
           } else {
             // Erro
-             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Falha no registro: $message'), backgroundColor: Colors.red),
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text('Falha no registro: $message'),
+                  backgroundColor: Colors.red),
             );
           }
         }
       } catch (e) {
-         if (mounted) {
-            // Erro de conexão ou outr
-             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Erro ao conectar: ${e.toString()}'), backgroundColor: Colors.red),
-            );
-         }
+        if (mounted) {
+          // Erro de conexão ou outr
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text('Erro ao conectar: ${e.toString()}'),
+                backgroundColor: Colors.red),
+          );
+        }
         print('Erro na requisição HTTP: $e');
       } finally {
         if (mounted) {
@@ -134,8 +142,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       fillColor: Colors.white70,
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor, insira seu nome';
+                      if (value == null ||
+                          !UsernameRegisterValidator.isValidUsernameRegister(
+                              value)) {
+                        return 'Nome Inválido';
                       }
                       return null;
                     },
@@ -154,8 +164,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
-                      if (value == null || value.isEmpty || !value.contains('@')) {
-                        return 'Por favor, insira um email válido';
+                      if (value == null ||
+                          !EmailRegisterValidator.isValidEmailRegister(value)) {
+                        return 'E-mail Inválido';
                       }
                       return null;
                     },
@@ -174,7 +185,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     obscureText: true,
                     validator: (value) {
-                      if (value == null || value.isEmpty || value.length < 6) {
+                      if (value == null ||
+                          !PasswordRegisterValidator.isSecurePassWordRegister(
+                              value)) {
                         return 'A senha deve ter pelo menos 6 caracteres';
                       }
                       return null;
@@ -182,21 +195,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 30),
                   _isLoading
-                    ? CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            Theme.of(context).colorScheme.primary),
-                      )
-                    : CustomButton(
-                        text: 'Registrar',
-                        onPressed: _register,
-                      ),
+                      ? CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Theme.of(context).colorScheme.primary),
+                        )
+                      : CustomButton(
+                          text: 'Registrar',
+                          onPressed: _register,
+                        ),
                   const SizedBox(height: 20),
                   TextButton(
-                     onPressed: () => Navigator.pop(context), // tela de login
-                     child: Text(
-                       'Já tem uma conta? Faça login',
-                       style: TextStyle(color: Theme.of(context).colorScheme.primary),
-                     ),
+                    onPressed: () => Navigator.pop(context), // tela de login
+                    child: Text(
+                      'Já tem uma conta? Faça login',
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary),
+                    ),
                   ),
                 ],
               ),
@@ -206,4 +220,4 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
-} 
+}
