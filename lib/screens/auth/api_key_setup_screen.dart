@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:moodyr/screens/auth/login_screen.dart';
+import 'package:moodyr/screens/auth/gemini_tutorial_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ApiKeySetupScreen extends StatefulWidget {
@@ -152,6 +153,22 @@ class _ApiKeySetupScreenState extends State<ApiKeySetupScreen> {
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+            const SizedBox(height: 4),
+            TextButton.icon(
+              icon: const Icon(Icons.help_outline, size: 18),
+              label: const Text('Ver Tutorial Detalhado'),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const GeminiTutorialScreen()),
+                );
+              },
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                 foregroundColor: Colors.grey.shade600,
               ),
             ),
           ],
