@@ -7,7 +7,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('pt_BR', null);
 
-
   // Inicia diretamente com a SplashScreen
   runApp(const MoodlyApp());
 }
