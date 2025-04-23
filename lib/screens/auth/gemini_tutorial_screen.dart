@@ -32,7 +32,7 @@ class GeminiTutorialScreen extends StatelessWidget {
               stepNumber: 1,
               title: 'Acesse o Google AI Studio',
               description: 'Vá para a página inicial do Google AI Studio e faça login com sua conta Google.',
-              // Placeholder for image 1 description/reference if needed
+              
             ),
             const SizedBox(height: 16),
              _buildStep(
@@ -40,7 +40,7 @@ class GeminiTutorialScreen extends StatelessWidget {
               stepNumber: 2,
               title: 'Encontre "Get API key"',
               description: 'Na página principal do AI Studio, procure e clique no botão "Get API key", geralmente localizado no canto superior direito.',
-               // Placeholder for image 1 description/reference
+               
             ),
              const SizedBox(height: 16),
             _buildStep(
@@ -48,7 +48,7 @@ class GeminiTutorialScreen extends StatelessWidget {
               stepNumber: 3,
               title: 'Crie sua Chave',
               description: 'Na tela de "API Keys", clique no botão "Criar chave de API."',
-               // Placeholder for image 2 description/reference
+
             ),
             const SizedBox(height: 16),
             _buildStep(
@@ -56,7 +56,7 @@ class GeminiTutorialScreen extends StatelessWidget {
               stepNumber: 4,
               title: 'Copie a Chave',
               description: 'Uma nova chave será gerada. Clique no botão para copiar a chave para sua área de transferência.',
-              // Placeholder for generic copy action description
+
             ),
              const SizedBox(height: 16),
              _buildStep(
@@ -115,8 +115,6 @@ class GeminiTutorialScreen extends StatelessWidget {
                      description,
                      style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
                    ),
-                   // Add Image Widget here if displaying images directly
-                   // Example: const SizedBox(height: 10), Image.asset('path/to/image_$stepNumber.png'),
                  ],
                ),
              ),

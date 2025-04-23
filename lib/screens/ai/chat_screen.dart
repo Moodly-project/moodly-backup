@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http; // Necessário para buscar entradas
-import 'dart:convert'; // Necessário para jsonDecode
-import 'package:intl/intl.dart'; // Necessário para formatar datas no prompt (se usarmos)
-import 'package:moodyr/models/diary_entry_model.dart'; // Importar modelo da entrada
-// Importar outros pacotes necessários, como http, se precisar buscar dados
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:intl/intl.dart';
+import 'package:moodyr/models/diary_entry_model.dart';
 
 class ChatScreen extends StatefulWidget {
-  // Poderíamos passar dados iniciais aqui, como a última entrada do diário
-  // final DiaryEntry? initialContext;
-  // const ChatScreen({super.key, this.initialContext});
+  
 
   const ChatScreen({super.key});
 
@@ -20,17 +17,17 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _textController = TextEditingController();
-  final ScrollController _scrollController = ScrollController(); // Para rolar a lista
-  final List<Map<String, dynamic>> _messages = []; // Agora pode conter outros tipos
-  List<DiaryEntry> _diaryEntries = []; // Para armazenar entradas do diário
+  final ScrollController _scrollController = ScrollController(); 
+  final List<Map<String, dynamic>> _messages = [];
+  List<DiaryEntry> _diaryEntries = []; 
   bool _isLoading = false;
-  bool _isFetchingEntries = false; // Estado para busca de entradas
+  bool _isFetchingEntries = false;
   String? _errorMessage;
   String? _apiKey;
   GenerativeModel? _model;
 
   final _storage = const FlutterSecureStorage();
-  final String _apiBaseUrl = 'http://10.0.2.2:3000/api'; // Mesma URL da DiaryScreen
+  final String _apiBaseUrl = 'http://10.0.2.2:3000/api'; // URL da DiaryScreen
 
   @override
   void initState() {
@@ -53,7 +50,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _model = GenerativeModel(model: 'gemini-1.5-flash-latest', apiKey: _apiKey!);
 
       // Buscar entradas do diário em paralelo (sem bloquear a UI inicial)
-      _fetchEntries(); // Não aguarda aqui, mas atualiza _isFetchingEntries
+      _fetchEntries();
 
       // Adiciona a mensagem inicial do bot APÓS carregar a chave
       if (mounted) {

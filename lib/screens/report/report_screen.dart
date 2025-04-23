@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:moodyr/models/diary_entry_model.dart'; // Certifique-se que o path está correto
+import 'package:moodyr/models/diary_entry_model.dart';
 
 // --- Constantes para Humores ---
 class Mood {
@@ -60,7 +60,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
   // TODO: Considere mover a URL base para um arquivo de configuração ou variáveis de ambiente
   final String _apiBaseUrl = 'http://10.0.2.2:3000/api';
 
-  // Dados calculados
+  // Dados calculados que serão preenchidos após buscar as entradas
   Map<String, int> _moodCounts = {};
   Map<int, int> _dayOfWeekFrequency = {};
   Map<String, Map<String, int>> _monthlyMoods = {};
@@ -98,7 +98,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
     setState(() {
       _isLoading = true;
       _errorMessage = null;
-      _diaryEntries = []; // Limpar dados antigos
+      _diaryEntries = []; // Limpa dados antigos antes de buscar novos
     });
 
     try {
@@ -108,7 +108,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
         headers: headers,
       );
 
-      if (!mounted) return; // Check if the widget is still in the tree
+      if (!mounted) return; // Check if the widget is still in the tree before proceeding
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
@@ -116,17 +116,17 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
           return DiaryEntry(
             id: item['id']?.toString() ?? '', // Add null check and default value
             content: item['conteudo'] ?? '',
-            date: DateTime.tryParse(item['data_entrada'] ?? '') ?? DateTime.now(), // Handle parsing error
-            mood: item['humor'] ?? Mood.calmo, // Default mood if null
+            date: DateTime.tryParse(item['data_entrada'] ?? '') ?? DateTime.now(), // Handle potential parsing error
+            mood: item['humor'] ?? Mood.calmo, // Provide a default mood if null
           );
         }).toList();
 
-        // Ordenar por data
+        // Ordena as entradas por data para garantir a ordem cronológica
         entries.sort((a, b) => a.date.compareTo(b.date));
 
         setState(() {
           _diaryEntries = entries;
-          _calculateStatistics(); // Calcular estatísticas após buscar
+          _calculateStatistics(); // Calcula estatísticas após buscar os dados
           _isLoading = false;
         });
       } else {
@@ -138,7 +138,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
             serverMessage = decodedBody['message'];
           }
         } catch (_) {
-          // Ignora erro de decodificação, usa mensagem padrão
+          // Ignora erro de decodificação do corpo da resposta, usa mensagem padrão
         }
         setState(() {
           _errorMessage = serverMessage;
@@ -148,8 +148,8 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = 'Erro de conexão: Verifique sua rede.'; // Mensagem mais genérica
-        print("Erro fetchEntries: $e"); // Log do erro para debug
+        _errorMessage = 'Erro de conexão: Verifique sua rede.'; // Mensagem de erro mais genérica para o usuário
+        print("Erro fetchEntries: $e"); // Log do erro para debug interno
         _isLoading = false;
       });
     }
@@ -174,7 +174,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
   Map<int, int> _calculateDayOfWeekFrequency(List<DiaryEntry> entries) {
     final Map<int, int> frequency = {};
     for (final entry in entries) {
-      final int dayOfWeek = entry.date.weekday; // 1 (Segunda) a 7 (Domingo)
+      final int dayOfWeek = entry.date.weekday; // Em Dart: 1 (Segunda) a 7 (Domingo)
       frequency[dayOfWeek] = (frequency[dayOfWeek] ?? 0) + 1;
     }
     return frequency;
@@ -182,7 +182,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
 
    Map<String, Map<String, int>> _calculateMonthlyMoods(List<DiaryEntry> entries) {
       final Map<String, Map<String, int>> monthlyData = {};
-      // Usar um locale consistente para formatação de mês
+      // Usar um locale consistente (pt_BR) para formatação de mês ('MMM/yy')
       final DateFormat monthFormatter = DateFormat('MMM/yy', 'pt_BR');
 
       for (final entry in entries) {
@@ -242,7 +242,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
       return _buildEmptyState(context, colorScheme);
     }
 
-    // Se chegou aqui, temos dados
+    // Se chegou aqui, temos dados e podemos construir a UI principal
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -340,7 +340,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
             colorScheme: colorScheme,
             title: 'Distribuição de Emoções',
             child: SizedBox(
-              height: 300,
+              height: 300, // Altura fixa para o gráfico de pizza
               child: _buildPieChart(_moodCounts, _diaryEntries.length),
             ),
           ),
@@ -390,7 +390,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
             colorScheme: colorScheme,
             title: 'Frequência por Dia da Semana',
             child: AspectRatio(
-              aspectRatio: 1.5,
+              aspectRatio: 1.5, // Proporção para o gráfico de barras
               child: _buildDayOfWeekBarChart(_dayOfWeekFrequency, colorScheme),
             ),
           ),
@@ -417,7 +417,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      // Usar cor do tema com opacidade
+      // Usa a cor do card do tema com alguma transparência
       color: Theme.of(context).cardColor.withOpacity(0.85),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -457,7 +457,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
             child: Icon(icon, color: effectiveColor),
           ),
           const SizedBox(width: 16),
-          Expanded( // Use Expanded para evitar overflow se o texto for longo
+          Expanded( // Usa Expanded para garantir que o texto não cause overflow
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -467,7 +467,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
                     color: Colors.grey.shade700,
                     fontSize: 14,
                   ),
-                  overflow: TextOverflow.ellipsis, // Evita quebrar linha
+                  overflow: TextOverflow.ellipsis, // Evita quebra de linha se o título for muito longo
                 ),
                 Text(
                   value,
@@ -475,7 +475,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
-                   overflow: TextOverflow.ellipsis,
+                   overflow: TextOverflow.ellipsis, // Evita quebra de linha se o valor for muito longo
                 ),
               ],
             ),
@@ -493,7 +493,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
        );
      }
 
-     // Ordenar meses cronologicamente (assumindo formato MMM/yy)
+     // Ordena os meses cronologicamente (assumindo o formato 'MMM/yy' definido em _calculateMonthlyMoods)
      final DateFormat monthParser = DateFormat('MMM/yy', 'pt_BR');
      final List<String> sortedMonths = monthlyMoods.keys.toList()
        ..sort((a, b) {
@@ -502,12 +502,12 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
            final dateB = monthParser.parse(b);
            return dateA.compareTo(dateB);
          } catch (e) {
-           // Fallback para ordenação de string se o parse falhar
+           // Fallback para ordenação de string normal se o parse falhar por algum motivo
            return a.compareTo(b);
          }
        });
 
-     // Pegar os últimos 3 meses (ou menos se não houver tantos)
+     // Pega os últimos 3 meses (ou menos se não houver dados suficientes) para exibir no resumo
      final List<String> recentMonths = sortedMonths.length > 3
          ? sortedMonths.sublist(sortedMonths.length - 3)
          : sortedMonths;
@@ -515,9 +515,9 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
      return Column(
        children: recentMonths.map((month) {
          final Map<String, int> moodsInMonth = monthlyMoods[month]!;
-         if (moodsInMonth.isEmpty) return const SizedBox.shrink(); // Não mostra mês sem humor
+         if (moodsInMonth.isEmpty) return const SizedBox.shrink(); // Não mostra mês sem nenhuma entrada
 
-         // Encontrar humor predominante do mês
+         // Encontra o humor predominante do mês (o que teve mais ocorrências)
          final String dominantMood = moodsInMonth.entries
              .reduce((a, b) => a.value > b.value ? a : b)
              .key;
@@ -536,7 +536,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
                  style: TextStyle(
                    color: moodColor,
                    fontWeight: FontWeight.bold,
-                   fontSize: 12, // Ajuste tamanho para caber
+                   fontSize: 12, // Tamanho de fonte menor para caber 'Jan', 'Fev', etc.
                  ),
                ),
              ),
@@ -546,7 +546,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
              ),
              subtitle: Text('Total de entradas: $totalEntries', style: const TextStyle(fontSize: 12)),
              trailing: Icon(moodIcon, color: moodColor),
-             dense: true, // Torna o ListTile mais compacto
+             dense: true, // Torna o ListTile mais compacto verticalmente
            ),
          );
        }).toList(),
@@ -631,8 +631,8 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
      return BarChart(
        BarChartData(
          alignment: BarChartAlignment.spaceAround,
-         maxY: maxY <= 1 ? 5 : maxY, // Garante um maxY mínimo para visualização
-         barTouchData: BarTouchData(enabled: false), // Desabilitar toque para simplificar
+         maxY: maxY <= 1 ? 5 : maxY, // Garante um maxY mínimo de 5 para melhor visualização quando há poucas entradas
+         barTouchData: BarTouchData(enabled: false), // Desabilitar interatividade por toque no gráfico de barras
          titlesData: FlTitlesData(
            show: true,
            // Títulos da Esquerda (Eixo Y - Contagem)
@@ -640,7 +640,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
              sideTitles: SideTitles(
                showTitles: true,
                getTitlesWidget: (value, meta) {
-                 // Mostra apenas inteiros e evita o 0 se não houver dados
+                 // Mostra apenas números inteiros no eixo Y e evita o 0 se não houver dados (maxY <= 1)
                   if (value == 0 && maxY <= 1) return const Text('');
                  if (value % 1 == 0 && value < maxY) {
                     return Text(
@@ -651,7 +651,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
                  return const Text('');
                },
                reservedSize: 30,
-               interval: max(1, (maxY / 5).floorToDouble()), // Ajusta intervalo dinamicamente
+               interval: max(1, (maxY / 5).floorToDouble()), // Ajusta o intervalo do eixo Y dinamicamente baseado no maxY
              ),
            ),
            // Títulos de Baixo (Eixo X - Dias da Semana)
@@ -674,29 +674,29 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
                reservedSize: 30,
              ),
            ),
-            // Remover títulos do topo e direita
+            // Remover títulos do topo e da direita para um visual mais limpo
            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
          ),
-         borderData: FlBorderData(show: false), // Sem borda
-         gridData: FlGridData( // Linhas de grade horizontais sutis
+         borderData: FlBorderData(show: false), // Sem borda ao redor do gráfico
+         gridData: FlGridData( // Linhas de grade horizontais sutis para referência
             show: true,
-            drawVerticalLine: false,
-            horizontalInterval: max(1, (maxY / 5).floorToDouble()),
+            drawVerticalLine: false, // Não desenha linhas de grade verticais
+            horizontalInterval: max(1, (maxY / 5).floorToDouble()), // Intervalo das linhas de grade igual ao do eixo Y
              getDrawingHorizontalLine: (value) => FlLine(
-                  color: colorScheme.outline.withOpacity(0.2),
+                  color: colorScheme.outline.withOpacity(0.2), // Cor sutil para as linhas
                   strokeWidth: 1,
                 ),
           ),
          barGroups: List.generate(7, (index) {
-           final int dayIndex = index + 1; // Dias da semana são 1-7
+           final int dayIndex = index + 1; // Mapeia índice 0-6 para dia da semana 1-7
            final int count = frequency[dayIndex] ?? 0;
            return BarChartGroupData(
-             x: index, // Índices 0-6
+             x: index, // Posição no eixo X (0 a 6)
              barRods: [
                BarChartRodData(
                  toY: count.toDouble(),
-                 gradient: LinearGradient( // Gradiente suave para as barras
+                 gradient: LinearGradient( // Aplica um gradiente suave às barras
                    colors: [
                      colorScheme.primary.withOpacity(0.8),
                      colorScheme.tertiary.withOpacity(0.8),
@@ -704,8 +704,8 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
                    begin: Alignment.bottomCenter,
                    end: Alignment.topCenter,
                  ),
-                 width: 20,
-                 borderRadius: const BorderRadius.only(
+                 width: 20, // Largura das barras
+                 borderRadius: const BorderRadius.only( // Bordas arredondadas no topo
                    topLeft: Radius.circular(6),
                    topRight: Radius.circular(6),
                  ),
@@ -716,6 +716,4 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
        ),
      );
    }
-
 }
-// --- END OF REFACTORED FILE report_screen.dart ---

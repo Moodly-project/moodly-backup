@@ -4,7 +4,7 @@ const authenticateToken = require('../middleware/authenticateToken'); // Middlew
 
 const router = express.Router();
 
-// Helper function for date validation
+
 const isValidDateFormat = (dateString) => {
   return /^\d{4}-\d{2}-\d{2}$/.test(dateString);
 };

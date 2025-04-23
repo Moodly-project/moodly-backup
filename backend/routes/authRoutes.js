@@ -6,10 +6,10 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 const saltRounds = 10;
 
-// !! IMPORTANTE: Use a mesma chave secreta definida no middleware !!
+// chave secreta definida no middleware 
 const JWT_SECRET = process.env.JWT_SECRET || 'suaChaveSecretaMuitoForteAqui'; // Substitua por uma chave segura
 
-// Rota de Registro (POST /api/auth/register)
+// Rota de Registro POST
 router.post('/register', async (req, res) => {
   const { nome, email, senha } = req.body;
 
@@ -28,10 +28,10 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ message: 'Email já cadastrado.' });
     }
 
-    // Hash da senha
+    // Hash senha
     const senhaHash = await bcrypt.hash(senha, saltRounds);
 
-    // Inserir usuário no banco
+    // usuário no banco
     const [result] = await db.query(
       'INSERT INTO usuarios (nome, email, senha_hash) VALUES (?, ?, ?)',
       [nome, email, senhaHash]
@@ -45,7 +45,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Rota de Login (POST /api/auth/login)
+// Rota de Login
 router.post('/login', async (req, res) => {
   const { email, senha } = req.body;
 
@@ -54,7 +54,7 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    // Buscar usuário pelo email (não deletado)
+    // Buscar usuário pelo email
     const [users] = await db.query('SELECT id, nome, email, senha_hash FROM usuarios WHERE email = ? AND deleted_at IS NULL', [email]);
 
     if (users.length === 0) {
@@ -63,18 +63,18 @@ router.post('/login', async (req, res) => {
 
     const user = users[0];
 
-    // Comparar a senha fornecida com o hash armazenado
+    // Comparar a senha com hash
     const match = await bcrypt.compare(senha, user.senha_hash);
 
     if (!match) {
       return res.status(401).json({ message: 'Email ou senha inválidos.' }); // Senha incorreta
     }
 
-    // Login bem-sucedido: Gerar o token JWT
+    // Gerar o token JWT
     const payload = {
         id: user.id,
         email: user.email,
-        // Você pode adicionar mais dados ao payload se necessário, mas mantenha-o pequeno
+        
     };
 
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }); // Token expira em 1 hora
