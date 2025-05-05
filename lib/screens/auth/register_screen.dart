@@ -18,6 +18,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   bool _isLoading = false; // Estado para indicar carregamento
 
@@ -26,6 +27,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -193,6 +195,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return null;
                     },
                   ),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: _confirmPasswordController,
+                    decoration: InputDecoration(
+                      labelText: 'Confirmar Senha',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white70,
+                    ),
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor, confirme sua senha';
+                      }
+                      if (value != _passwordController.text) {
+                        return 'As senhas não coincidem';
+                      }
+                      return null;
+                    },
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0, left: 12.0),
+                    child: Row(
+                      children: [
+                        InkWell(
+                          onTap: () => _showPasswordConfirmationInfo(context),
+                          child: Icon(
+                            Icons.help_outline,
+                            size: 18,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 30),
                   _isLoading
                       ? CircularProgressIndicator(
@@ -218,6 +259,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showPasswordConfirmationInfo(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Por que confirmar a senha?'),
+          content: const Text(
+              'Confirmar a senha ajuda a garantir que você digitou a senha desejada corretamente, evitando erros de digitação que poderiam impedir seu acesso futuro à conta.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Entendi'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
