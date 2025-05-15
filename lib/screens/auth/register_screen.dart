@@ -21,6 +21,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
 
   bool _isLoading = false; // Estado para indicar carregamento
+  bool _showPassword = false; // Controla a visibilidade da senha
+  bool _showConfirmPassword = false; // Controla a visibilidade da confirmação de senha
+
+  // Configuração padrão para os inputs do formulário
+  InputDecoration _getInputDecoration({
+    required String labelText,
+    required Icon prefixIcon,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      labelText: labelText,
+      prefixIcon: prefixIcon,
+      suffixIcon: suffixIcon,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      filled: true,
+      fillColor: Colors.white70,
+      // Configuração para garantir que as mensagens de erro tenham espaço suficiente
+      errorMaxLines: 3, // Permite até 3 linhas para mensagens de erro
+      helperMaxLines: 1,
+      alignLabelWithHint: true,
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+    );
+  }
 
   @override
   void dispose() {
@@ -93,6 +119,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  // Função para alternar a visibilidade da senha com animação
+  void _togglePasswordVisibility() {
+    setState(() {
+      _showPassword = !_showPassword;
+    });
+  }
+
+  // Função para alternar a visibilidade da confirmação de senha com animação
+  void _toggleConfirmPasswordVisibility() {
+    setState(() {
+      _showConfirmPassword = !_showConfirmPassword;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,14 +174,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 40),
                   TextFormField(
                     controller: _nameController,
-                    decoration: InputDecoration(
+                    decoration: _getInputDecoration(
                       labelText: 'Nome',
                       prefixIcon: const Icon(Icons.person_outline),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white70,
                     ),
                     validator: (value) {
                       if (value == null ||
@@ -152,17 +187,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   TextFormField(
                     controller: _emailController,
-                    decoration: InputDecoration(
+                    decoration: _getInputDecoration(
                       labelText: 'Email',
                       prefixIcon: const Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white70,
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
@@ -173,41 +203,59 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   TextFormField(
                     controller: _passwordController,
-                    decoration: InputDecoration(
+                    decoration: _getInputDecoration(
                       labelText: 'Senha',
                       prefixIcon: const Icon(Icons.lock_outline),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      suffixIcon: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (Widget child, Animation<double> animation) {
+                          return ScaleTransition(scale: animation, child: child);
+                        },
+                        child: IconButton(
+                          key: ValueKey<bool>(_showPassword),
+                          icon: Icon(
+                            _showPassword ? Icons.visibility : Icons.visibility_off,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          onPressed: _togglePasswordVisibility,
+                        ),
                       ),
-                      filled: true,
-                      fillColor: Colors.white70,
                     ),
-                    obscureText: true,
+                    obscureText: !_showPassword,
                     validator: (value) {
                       if (value == null ||
                           !PasswordRegisterValidator.isSecurePassWordRegister(
                               value)) {
-                        return 'A senha deve ter pelo menos 6 caracteres';
+                        return 'A senha deve ter pelo menos 6 caracteres, incluir letra maiúscula, número e caractere especial';
                       }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   TextFormField(
                     controller: _confirmPasswordController,
-                    decoration: InputDecoration(
+                    decoration: _getInputDecoration(
                       labelText: 'Confirmar Senha',
                       prefixIcon: const Icon(Icons.lock_outline),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      suffixIcon: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (Widget child, Animation<double> animation) {
+                          return ScaleTransition(scale: animation, child: child);
+                        },
+                        child: IconButton(
+                          key: ValueKey<bool>(_showConfirmPassword),
+                          icon: Icon(
+                            _showConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          onPressed: _toggleConfirmPasswordVisibility,
+                        ),
                       ),
-                      filled: true,
-                      fillColor: Colors.white70,
                     ),
-                    obscureText: true,
+                    obscureText: !_showConfirmPassword,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Por favor, confirme sua senha';
@@ -223,7 +271,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Row(
                       children: [
                         InkWell(
-                          onTap: () => _showPasswordConfirmationInfo(context),
+                          onTap: () => _showPasswordRequirements(context),
                           child: Icon(
                             Icons.help_outline,
                             size: 18,
@@ -231,6 +279,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                         const SizedBox(width: 4),
+                        Text('Requisitos de senha',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.primary,
+                            )),
                       ],
                     ),
                   ),
@@ -259,6 +312,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showPasswordRequirements(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Requisitos de Senha'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text('• Mínimo de 6 caracteres'),
+              Text('• Pelo menos uma letra maiúscula'),
+              Text('• Pelo menos um número'),
+              Text('• Pelo menos um caractere especial (ex: !@#\$%^&*)'),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Entendi'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
