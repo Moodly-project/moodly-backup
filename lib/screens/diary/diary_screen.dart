@@ -8,6 +8,7 @@ import 'package:moodyr/screens/report/report_screen.dart';
 import 'package:moodyr/screens/auth/login_screen.dart';
 import 'package:moodyr/screens/ai/ai_screen.dart';
 import 'package:moodyr/screens/ai/chat_screen.dart';
+import 'package:moodyr/services/api_config_service.dart';
 
 class DiaryScreen extends StatefulWidget {
   const DiaryScreen({super.key});
@@ -21,6 +22,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
   bool _isLoading = true; // Estado para carregamento inicial
   String? _errorMessage; // Estado para mensagens de erro
   final _storage = const FlutterSecureStorage(); // Instância do secure storage
+  final _apiConfigService = ApiConfigService();
 
   // URL Base da API (ajuste conforme necessário)
   // 10.0.2.2 emulador Android
@@ -76,8 +78,9 @@ class _DiaryScreenState extends State<DiaryScreen> {
     });
     try {
       final headers = await _getHeaders();
+      final apiUrl = await _apiConfigService.getBaseUrl();
       final response = await http.get(
-        Uri.parse('$_apiBaseUrl/diary'),
+        Uri.parse('$apiUrl/diary'),
         headers: headers,
       );
 
@@ -133,36 +136,35 @@ class _DiaryScreenState extends State<DiaryScreen> {
   // Adicionar entrada via API
   Future<void> _addEntry(DiaryEntry entry) async {
     try {
-       final headers = await _getHeaders();
-       // Formata a data para 'YYYY-MM-DD'
-       final formattedDate = DateFormat('yyyy-MM-dd').format(entry.date);
+      final headers = await _getHeaders();
+      final apiUrl = await _apiConfigService.getBaseUrl();
+      final formattedDate = DateFormat('yyyy-MM-dd').format(entry.date);
+      
+      final response = await http.post(
+        Uri.parse('$apiUrl/diary'),
+        headers: headers,
+        body: jsonEncode({
+          'conteudo': entry.content,
+          'data_entrada': formattedDate,
+          'humor': entry.mood,
+        }),
+      );
 
-       final response = await http.post(
-         Uri.parse('$_apiBaseUrl/diary'),
-         headers: headers,
-         body: jsonEncode({
-           'conteudo': entry.content,
-           'humor': entry.mood,
-           'data_entrada': formattedDate,
-         }),
-       );
+      if (!mounted) return;
 
-       if (!mounted) return;
-
-        if (response.statusCode == 201) {
-           _fetchEntries(); // Recarrega as entradas após adicionar
-           ScaffoldMessenger.of(context).showSnackBar(
-               const SnackBar(content: Text('Entrada adicionada com sucesso!'), backgroundColor: Colors.green)
-           );
-       } else {
-          final responseBody = jsonDecode(response.body);
-          _showErrorSnackbar(responseBody['message'] ?? 'Falha ao adicionar entrada.');
-       }
+       if (response.statusCode == 201) {
+          _fetchEntries(); // Recarrega as entradas após adicionar
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Entrada adicionada com sucesso!'), backgroundColor: Colors.green)
+          );
+      } else {
+         final responseBody = jsonDecode(response.body);
+         _showErrorSnackbar(responseBody['message'] ?? 'Falha ao adicionar entrada.');
+      }
     } catch (e) {
        if (!mounted) return;
        _showErrorSnackbar('Erro ao conectar com o servidor: ${e.toString()}');
     }
-
   }
 
   // Atualizar entrada via API
@@ -233,8 +235,9 @@ class _DiaryScreenState extends State<DiaryScreen> {
      // confirmou, prosseguir
      try {
         final headers = await _getHeaders();
+        final apiUrl = await _apiConfigService.getBaseUrl();
         final response = await http.delete(
-         Uri.parse('$_apiBaseUrl/diary/$id'), // Passa o ID na URL
+         Uri.parse('$apiUrl/diary/$id'), // Passa o ID na URL
          headers: headers,
        );
 

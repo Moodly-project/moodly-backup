@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:moodyr/models/diary_entry_model.dart';
+import 'package:moodyr/services/api_config_service.dart';
 
 // --- Constantes para Humores ---
 class Mood {
@@ -57,6 +58,7 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
   bool _isLoading = true;
   String? _errorMessage;
   final _storage = const FlutterSecureStorage();
+  final _apiConfigService = ApiConfigService();
   // TODO: Considere mover a URL base para um arquivo de configuração ou variáveis de ambiente
   final String _apiBaseUrl = 'http://10.0.2.2:3000/api';
 
@@ -103,8 +105,9 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
 
     try {
       final headers = await _getHeaders();
+      final apiUrl = await _apiConfigService.getBaseUrl();
       final response = await http.get(
-        Uri.parse('$_apiBaseUrl/diary'),
+        Uri.parse('$apiUrl/diary'),
         headers: headers,
       );
 

@@ -6,6 +6,8 @@ import 'package:moodyr/screens/diary/diary_screen.dart';
 import 'package:moodyr/widgets/custom_button.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:moodyr/screens/auth/api_key_setup_screen.dart';
+import 'package:moodyr/screens/settings/api_settings_screen.dart';
+import 'package:moodyr/services/api_config_service.dart';
 
 import '../../validators/email_login_validator.dart';
 import '../../validators/password_login_validator.dart';
@@ -23,6 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   final _storage = const FlutterSecureStorage();
+  final _apiConfigService = ApiConfigService();
 
   @override
   void dispose() {
@@ -37,11 +40,10 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = true;
       });
 
-      const String apiUrl = 'http://10.0.2.2:3000/api/auth/login';
-
       try {
+        final apiUrl = await _apiConfigService.getBaseUrl();
         final response = await http.post(
-          Uri.parse(apiUrl),
+          Uri.parse('$apiUrl/auth/login'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },
@@ -112,6 +114,13 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const ApiKeySetupScreen()),
+    );
+  }
+
+  void _navigateToApiSettings() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ApiSettingsScreen()),
     );
   }
 
@@ -219,6 +228,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     icon: const Icon(Icons.key, size: 18),
                     label: const Text('Configurar Chave de API da IA'),
                     onPressed: _navigateToApiKeySetup,
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextButton.icon(
+                    icon: const Icon(Icons.settings, size: 18),
+                    label: const Text('Configurar URL da API'),
+                    onPressed: _navigateToApiSettings,
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.grey.shade600,
                     ),

@@ -5,6 +5,7 @@ import 'package:moodyr/validators/email_register_validator.dart';
 import 'package:moodyr/validators/password_register_validator.dart';
 import 'package:moodyr/validators/username_register_validator.dart';
 import 'package:moodyr/widgets/custom_button.dart';
+import 'package:moodyr/services/api_config_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -19,7 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-
+  final _apiConfigService = ApiConfigService();
   bool _isLoading = false; // Estado para indicar carregamento
   bool _showPassword = false; // Controla a visibilidade da senha
   bool _showConfirmPassword = false; // Controla a visibilidade da confirmação de senha
@@ -63,12 +64,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _isLoading = true; // Inicia o carregamento
       });
 
-      // Emulador Android: 'http://10.0.2.2:3000/api/auth/register'
-      const String apiUrl = 'http://10.0.2.2:3000/api/auth/register';
-
       try {
+        final apiUrl = await _apiConfigService.getBaseUrl();
         final response = await http.post(
-          Uri.parse(apiUrl),
+          Uri.parse('$apiUrl/auth/register'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },
