@@ -87,6 +87,40 @@ class _ApiSettingsScreenState extends State<ApiSettingsScreen> {
     }
   }
 
+  Future<void> _detectServerIp() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final detectedUrl = await _apiConfigService.detectServerIp();
+      if (detectedUrl != null) {
+        await _loadCurrentUrl(); // Recarrega a URL atual
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Servidor detectado automaticamente!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          _errorMessage = 'Não foi possível detectar o servidor automaticamente. Verifique se o servidor está rodando e tente novamente.';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Erro ao detectar servidor: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -115,7 +149,7 @@ class _ApiSettingsScreenState extends State<ApiSettingsScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Configure o endereço do servidor da API. Use o IP do seu computador quando estiver rodando no celular.',
+                        'Configure o endereço do servidor da API. Use o botão de detecção automática ou insira manualmente.',
                         style: TextStyle(
                           color: Colors.grey.shade600,
                           fontSize: 14,
@@ -130,6 +164,19 @@ class _ApiSettingsScreenState extends State<ApiSettingsScreen> {
                             style: const TextStyle(color: Colors.red),
                           ),
                         ),
+                      ElevatedButton.icon(
+                        onPressed: _isLoading ? null : _detectServerIp,
+                        icon: const Icon(Icons.search),
+                        label: const Text('Detectar Servidor Automaticamente'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Divider(),
+                      const SizedBox(height: 16),
                       TextFormField(
                         controller: _urlController,
                         decoration: InputDecoration(
