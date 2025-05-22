@@ -280,6 +280,28 @@ class _AIScreenState extends State<AIScreen> {
       return ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
+          // START --- NEW WARNING WIDGET ---
+          Card(
+            color: Colors.yellow.shade100, // Or another suitable warning color
+            margin: const EdgeInsets.only(bottom: 16.0),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent.shade700, size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      "Atenção: As análises de humor são geradas por IA e não devem ser interpretadas literalmente.",
+                      style: TextStyle(color: Colors.black87, fontSize: 14), // Adjust style as needed
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // END --- NEW WARNING WIDGET ---
+
           _buildSectionTitle('Resumo da IA', Icons.lightbulb_outline),
           _buildInfoCard(_aiSummary ?? 'Análise indisponível.', Theme.of(context).colorScheme.primary),
           const SizedBox(height: 20),
