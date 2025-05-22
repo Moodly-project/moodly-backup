@@ -660,10 +660,33 @@ class _DiaryScreenState extends State<DiaryScreen> {
       );
     } else {
       // Lista de entradas
-      return ListView.builder(
-        padding: const EdgeInsets.all(12.0),
-        itemCount: _diaryEntries.length,
-        itemBuilder: (context, index) {
+      return Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12.0),
+            margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5.0),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade100,
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    "Lembre-se: as análises de humor são geradas por IA e podem não ser precisas. Não as leve ao pé da letra.",
+                    style: TextStyle(color: Color(0xFFE65100)), // Colors.orange.shade900
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(12.0),
+              itemCount: _diaryEntries.length,
+              itemBuilder: (context, index) {
           final entry = _diaryEntries[index];
           final moodColor = _moodColors[entry.mood] ?? Colors.grey;
           
@@ -769,7 +792,10 @@ class _DiaryScreenState extends State<DiaryScreen> {
              ),
           );
         },
+            ),
+          ),
+        ],
       );
     }
   }
-} 
+}
