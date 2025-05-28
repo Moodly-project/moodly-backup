@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const db = require('../config/db').pool;
 const jwt = require('jsonwebtoken');
+const authenticateToken = require('../middleware/authenticateToken');
 
 const router = express.Router();
 const saltRounds = 10;
@@ -42,6 +43,50 @@ router.post('/register', async (req, res) => {
   } catch (error) {
     console.error('Erro no registro:', error);
     res.status(500).json({ message: 'Erro interno do servidor ao registrar usuário.' });
+  }
+});
+
+// Rota para atualizar a senha do usuário
+router.put('/user/update-password', authenticateToken, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const userId = req.user.id;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: 'Senha atual e nova senha são obrigatórias.' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ message: 'A nova senha deve ter pelo menos 6 caracteres.' });
+  }
+
+  try {
+    // Buscar hash da senha atual do usuário
+    const [users] = await db.query('SELECT senha_hash FROM usuarios WHERE id = ? AND deleted_at IS NULL', [userId]);
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'Usuário não encontrado.' });
+    }
+
+    const user = users[0];
+
+    // Comparar a senha atual fornecida com o hash armazenado
+    const match = await bcrypt.compare(currentPassword, user.senha_hash);
+
+    if (!match) {
+      return res.status(401).json({ message: 'Senha atual incorreta.' });
+    }
+
+    // Gerar hash da nova senha
+    const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+
+    // Atualizar a senha no banco de dados
+    await db.query('UPDATE usuarios SET senha_hash = ? WHERE id = ?', [newPasswordHash, userId]);
+
+    res.status(200).json({ message: 'Senha atualizada com sucesso.' });
+
+  } catch (error) {
+    console.error('Erro ao atualizar senha:', error);
+    res.status(500).json({ message: 'Erro interno do servidor ao atualizar senha.' });
   }
 });
 

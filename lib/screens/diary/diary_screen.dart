@@ -9,6 +9,7 @@ import 'package:moodyr/screens/auth/login_screen.dart';
 import 'package:moodyr/screens/ai/ai_screen.dart';
 import 'package:moodyr/screens/ai/chat_screen.dart';
 import 'package:moodyr/services/api_config_service.dart';
+import 'package:moodyr/screens/profile/profile_screen.dart';
 
 class DiaryScreen extends StatefulWidget {
   const DiaryScreen({super.key});
@@ -542,6 +543,16 @@ class _DiaryScreenState extends State<DiaryScreen> {
              icon: const Icon(Icons.psychology_outlined),
              tooltip: 'Assistente IA',
              onPressed: _navigateToAIScreen,
+           ),
+           // Botão para tela de Perfil
+           IconButton(
+             icon: const Icon(Icons.person_outline),
+             tooltip: 'Perfil do Usuário',
+             onPressed: () {
+               Navigator.of(context).push(
+                 MaterialPageRoute(builder: (_) => const ProfileScreen()),
+               );
+             },
            ),
            // Botão para tela de relatórios
            IconButton(
