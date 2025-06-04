@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:moodyr/models/diary_entry_model.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:intl/intl.dart'; // Necessário para formatar datas no prompt
+import 'package:moodyr/services/api_config_service.dart';
 
 
 // final Map<String, dynamic> _mockAiData = { ... };
@@ -29,7 +30,7 @@ class _AIScreenState extends State<AIScreen> {
   List<String> _aiSuggestions = [];
 
   final _storage = const FlutterSecureStorage();
-  final String _apiBaseUrl = 'http://10.0.2.2:3000/api';
+  final _apiConfigService = ApiConfigService();
 
   @override
   void initState() {
@@ -188,8 +189,9 @@ class _AIScreenState extends State<AIScreen> {
   // Buscar entradas da API do diário (adaptado de ReportScreen)
   Future<void> _fetchEntries() async {
     final headers = await _getAuthHeaders();
+    final apiUrl = await _apiConfigService.getBaseUrl();
     final response = await http.get(
-      Uri.parse('$_apiBaseUrl/diary'),
+      Uri.parse('${apiUrl}/diary'),
       headers: headers,
     );
 

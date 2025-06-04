@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:moodyr/models/diary_entry_model.dart';
+import 'package:moodyr/services/api_config_service.dart';
 
 class ChatScreen extends StatefulWidget {
   
@@ -27,7 +28,7 @@ class _ChatScreenState extends State<ChatScreen> {
   GenerativeModel? _model;
 
   final _storage = const FlutterSecureStorage();
-  final String _apiBaseUrl = 'http://10.0.2.2:3000/api'; // URL da DiaryScreen
+  final _apiConfigService = ApiConfigService();
 
   @override
   void initState() {
@@ -96,8 +97,9 @@ class _ChatScreenState extends State<ChatScreen> {
     });
     try {
       final headers = await _getHeaders();
+      final apiUrl = await _apiConfigService.getBaseUrl();
       final response = await http.get(
-        Uri.parse('$_apiBaseUrl/diary'),
+        Uri.parse('${apiUrl}/diary'),
         headers: headers,
       );
 
@@ -608,6 +610,7 @@ Responda à última mensagem do usuário abaixo:
 
       try {
          final headers = await _getHeaders();
+         final apiUrl = await _apiConfigService.getBaseUrl();
          
          // Usar data personalizada ou data atual
          final DateTime entryDate = customDate ?? DateTime.now();
@@ -619,7 +622,7 @@ Responda à última mensagem do usuário abaixo:
              : 'Registrado via chat IA.';
 
          final response = await http.post(
-           Uri.parse('$_apiBaseUrl/diary'),
+           Uri.parse('${apiUrl}/diary'),
            headers: headers,
            body: jsonEncode({
              'conteudo': content,

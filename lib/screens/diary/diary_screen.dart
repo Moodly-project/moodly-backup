@@ -24,10 +24,6 @@ class _DiaryScreenState extends State<DiaryScreen> {
   final _storage = const FlutterSecureStorage(); // Instância do secure storage
   final _apiConfigService = ApiConfigService();
 
-  // URL Base da API (ajuste conforme necessário)
-  // 10.0.2.2 emulador Android
-  final String _apiBaseUrl = 'http://10.0.2.2:3000/api';
-
   // ícones para humores
   final Map<String, IconData> _moodIcons = {
     'Feliz': Icons.emoji_emotions,
@@ -80,7 +76,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
       final headers = await _getHeaders();
       final apiUrl = await _apiConfigService.getBaseUrl();
       final response = await http.get(
-        Uri.parse('$apiUrl/diary'),
+        Uri.parse('${apiUrl}/diary'),
         headers: headers,
       );
 
@@ -141,7 +137,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
       final formattedDate = DateFormat('yyyy-MM-dd').format(entry.date);
       
       final response = await http.post(
-        Uri.parse('$apiUrl/diary'),
+        Uri.parse('${apiUrl}/diary'),
         headers: headers,
         body: jsonEncode({
           'conteudo': entry.content,
@@ -171,10 +167,11 @@ class _DiaryScreenState extends State<DiaryScreen> {
   Future<void> _updateEntry(DiaryEntry updatedEntry) async {
      try {
        final headers = await _getHeaders();
+       final apiUrl = await _apiConfigService.getBaseUrl();
        final formattedDate = DateFormat('yyyy-MM-dd').format(updatedEntry.date);
 
        final response = await http.put(
-         Uri.parse('$_apiBaseUrl/diary/${updatedEntry.id}'), // Passa o ID na URL
+         Uri.parse('${apiUrl}/diary/${updatedEntry.id}'), // Passa o ID na URL
          headers: headers,
          body: jsonEncode({
            'conteudo': updatedEntry.content,
@@ -237,7 +234,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
         final headers = await _getHeaders();
         final apiUrl = await _apiConfigService.getBaseUrl();
         final response = await http.delete(
-         Uri.parse('$apiUrl/diary/$id'), // Passa o ID na URL
+         Uri.parse('${apiUrl}/diary/$id'), // Passa o ID na URL
          headers: headers,
        );
 

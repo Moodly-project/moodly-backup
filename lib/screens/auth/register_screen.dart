@@ -20,10 +20,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _apiConfigService = ApiConfigService();
   bool _isLoading = false; // Estado para indicar carregamento
   bool _showPassword = false; // Controla a visibilidade da senha
   bool _showConfirmPassword = false; // Controla a visibilidade da confirmação de senha
+  final _apiConfigService = ApiConfigService();
 
   // Configuração padrão para os inputs do formulário
   InputDecoration _getInputDecoration({
@@ -67,7 +67,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       try {
         final apiUrl = await _apiConfigService.getBaseUrl();
         final response = await http.post(
-          Uri.parse('$apiUrl/auth/register'),
+          Uri.parse('${apiUrl}/auth/register'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },

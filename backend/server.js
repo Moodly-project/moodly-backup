@@ -9,7 +9,11 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors()); // Habilita CORS para permitir requisições do frontend
+app.use(cors({
+  origin: '*', // Permite todas as origens em desenvolvimento
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json()); // Permite que o Express entenda JSON no corpo das requisições
 app.use(express.urlencoded({ extended: true })); // Permite entender dados de formulário
 
@@ -23,6 +27,11 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes); // Usa as rotas de autenticação no prefixo /api/auth
 app.use('/api/diary', diaryRoutes); // Usa as rotas do diário no prefixo /api/diary
+
+// Endpoint de health check
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Servidor está funcionando!' });
+});
 
 // Tratamento de rotas não encontradas
 app.use((req, res, next) => {

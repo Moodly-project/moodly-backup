@@ -59,8 +59,6 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
   String? _errorMessage;
   final _storage = const FlutterSecureStorage();
   final _apiConfigService = ApiConfigService();
-  // TODO: Considere mover a URL base para um arquivo de configuração ou variáveis de ambiente
-  final String _apiBaseUrl = 'http://10.0.2.2:3000/api';
 
   // Dados calculados que serão preenchidos após buscar as entradas
   Map<String, int> _moodCounts = {};
@@ -100,14 +98,14 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
     setState(() {
       _isLoading = true;
       _errorMessage = null;
-      _diaryEntries = []; // Limpa dados antigos antes de buscar novos
+      _diaryEntries = [];
     });
 
     try {
       final headers = await _getHeaders();
       final apiUrl = await _apiConfigService.getBaseUrl();
       final response = await http.get(
-        Uri.parse('$apiUrl/diary'),
+        Uri.parse('${apiUrl}/diary'),
         headers: headers,
       );
 

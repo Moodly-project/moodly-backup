@@ -78,6 +78,78 @@ Siga os passos abaixo para configurar e rodar o Moodly localmente.
 4.  **Primeiro Acesso:** Ao iniciar pela primeira vez, o aplicativo solicitará que você aceite os Termos de Uso e, em seguida, configure sua chave de API de IA.
 5.  **Uso Normal:** Após a configuração inicial, você será direcionado para a tela de Login/Registro.
 
+## Como rodar o backend local e acessar pelo celular usando ngrok
+
+Se você quer testar o app Flutter em um celular (ou em qualquer rede diferente do seu PC), siga este passo a passo para expor seu backend local usando o ngrok:
+
+### 1. Instale o ngrok
+
+Se ainda não instalou, rode:
+
+```
+npm install -g ngrok
+```
+
+### 2. Crie uma conta gratuita no ngrok
+
+Acesse: https://dashboard.ngrok.com/signup
+
+### 3. Pegue seu token de autenticação
+
+Após criar a conta, copie o token que aparece no dashboard.
+
+### 4. Autentique o ngrok no seu PC
+
+Rode no terminal (substitua pelo seu token):
+
+```
+ngrok config add-authtoken SEU_TOKEN_AQUI
+```
+
+### 5. Inicie o backend normalmente
+
+No diretório `backend`, rode:
+
+```
+npm run dev
+```
+
+### 6. Inicie o ngrok apontando para a porta do backend
+
+No terminal, rode:
+
+```
+ngrok http 3000
+```
+
+Vai aparecer uma URL do tipo:
+
+```
+Forwarding https://xxxx-xx-xx-xxx-xx.ngrok-free.app -> http://localhost:3000
+```
+
+### 7. Atualize a URL da API no app Flutter
+
+No arquivo `lib/services/api_config_service.dart`, altere a linha:
+
+```
+static const String _defaultUrl = 'https://xxxx-xx-xx-xxx-xx.ngrok-free.app/api';
+```
+
+Coloque a URL exata que o ngrok mostrou (ela muda toda vez que você reinicia o ngrok!).
+
+### 8. Rode o app Flutter no celular
+
+- Certifique-se de que o backend e o ngrok estão rodando.
+- Rode o app no celular normalmente.
+- O app vai acessar o backend via internet, mesmo em redes diferentes.
+
+### Observações importantes
+- Sempre que reiniciar o ngrok, a URL muda. Atualize no código e rode o app novamente.
+- O backend precisa estar rodando antes de iniciar o ngrok.
+- Se der erro de JSON ou aparecer HTML, provavelmente a URL do ngrok está errada ou o backend não está rodando.
+- Você pode testar a URL do ngrok no navegador: `https://xxxx-xx-xx-xxx-xx.ngrok-free.app/api/health` deve mostrar `{"status":"ok","message":"Servidor está funcionando!"}`
+
 ---
 
-Esperamos que estas instruções ajudem! Se encontrar problemas, verifique as configurações do banco de dados e as URLs da API no código.
+Se tiver dúvidas, consulte este guia ou peça ajuda! ;)
